@@ -32,7 +32,7 @@ Camera::Camera()
 	
 	//
 	m_movespeed = 10.0;
-	m_camRotRate = 3.0;
+	m_camRotRate = 1.0;
 
 	//active = false;
 	//force update with initial values to generate other camera data correctly for first update. 
@@ -48,10 +48,18 @@ void Camera::Update()
 {
 	if (active)
 	{
+		DirectX::SimpleMath::Quaternion a;
+		a.x = sin(DirectX::XMConvertToRadians(m_orientation.y) * m_camRotRate/2);
+		a.y = sin(DirectX::XMConvertToRadians(m_orientation.z) * m_camRotRate/2);
+		a.z = cos(DirectX::XMConvertToRadians(m_orientation.y) * m_camRotRate/2);
+		a.w = 1;
+
+		DirectX::SimpleMath::Quaternion currentRot = DirectX::SimpleMath::Quaternion(m_forward.x, m_forward.y, m_forward.z,1);
 		//rotation in yaw - using the paramateric equation of a circle
-		m_forward.x = sin(DirectX::XMConvertToRadians(m_orientation.y) * m_camRotRate/10);
-		m_forward.y = sin(m_orientation.z) * m_camRotRate;
-		m_forward.z = cos(DirectX::XMConvertToRadians(m_orientation.y) * m_camRotRate/10);
+		m_forward += DirectX::XMQuaternionSlerp(currentRot, a,0.3f);
+		// m_forward.x = sin(DirectX::XMConvertToRadians(m_orientation.y) * m_camRotRate/10);
+		// m_forward.y = sin(m_orientation.z) * m_camRotRate;
+		// m_forward.z = cos(DirectX::XMConvertToRadians(m_orientation.y) * m_camRotRate/10);
 		// DirectX::
 		m_forward.Normalize();
 

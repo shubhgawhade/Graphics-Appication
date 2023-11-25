@@ -36,6 +36,8 @@ void Input::Update()
 	auto kb = m_keyboard->GetState();	//updates the basic keyboard state
 	m_KeyboardTracker.Update(kb);		//updates the more feature filled state. Press / release etc. 
 	auto mouse = m_mouse->GetState();   //updates the basic mouse state
+	m_mouse->SetMode(DirectX::Mouse::MODE_RELATIVE);
+	m_mouse->SetVisible(false);
 	m_MouseTracker.Update(mouse);		//updates the more advanced mouse state. 
 
 	if (kb.Escape)// check has escape been pressed.  if so, quit out. 

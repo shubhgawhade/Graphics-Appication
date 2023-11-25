@@ -122,6 +122,7 @@ void Game::Tick()
 
 	
 }
+Vector3 rotation;
 
 // Updates the world.
 void Game::Update(DX::StepTimer const& timer)
@@ -187,9 +188,23 @@ void Game::Update(DX::StepTimer const& timer)
     // }
 
 	float screenRatioY = m_gameInputCommands.mouseY / static_cast<float>(Height);
-	m_gameInputCommands.mouseY = -1 + screenRatioY * 2;
+	float screenRatioX = m_gameInputCommands.mouseX / static_cast<float>(Width);
+	// m_gameInputCommands.mouseY = -1 + screenRatioY * 2;
+	// m_gameInputCommands.mouseX = -1 + screenRatioX * 2;
 
-	Vector3 rotation = Vector3(0, -m_gameInputCommands.mouseX,-m_gameInputCommands.mouseY);
+	rotation += Vector3(0, -m_gameInputCommands.mouseX,-m_gameInputCommands.mouseY);
+
+	rotation.z = std::min(90.0f, rotation.z);
+	rotation.z = std::max(-90.0f, rotation.z);
+	// if(rotation.z > 90)
+	// {
+	// 	rotation.z = 90;
+	// }
+	// else if(rotation.z < -90)
+	// {
+	// 	rotation.z = -90;
+	// }
+
 	// rotation = XMVectorClamp(rotation, Vector3(0,-m_gameInputCommands.mouseX,-180),Vector3(0,-m_gameInputCommands.mouseX,180));
 	m_Camera01.setRotation(rotation);
     
@@ -265,7 +280,7 @@ void Game::Render()
     m_deviceResources->PIXEndEvent();
 	
 	//Set Rendering states. 
-	context->OMSetBlendState(m_states->Opaque(), nullptr, 0xFFFFFFFF);
+	context->OMSetBlendState(m_states->AlphaBlend(), nullptr, 0xFFFFFFFF);
 	context->OMSetDepthStencilState(m_states->DepthDefault(), 0);
 	context->RSSetState(m_states->CullClockwise());
 //	context->RSSetState(m_states->Wireframe());
@@ -278,9 +293,10 @@ void Game::Render()
 	//render our model
 	m_BasicModel.Render(context);
 
-	//prepare transform for second object. 
+	//prepare transform for second object.
 	SimpleMath::Matrix newPosition = SimpleMath::Matrix::CreateTranslation(2.0f, 0.0f, 0.0f);
 	m_world = m_world * newPosition;
+
 
 	//setup and draw sphere
 	m_BasicShaderPair.EnableShader(context);
@@ -409,10 +425,11 @@ void Game::CreateDeviceDependentResources()
 
 	//load and set up our Vertex and Pixel Shaders
 	m_BasicShaderPair.InitStandard(device, L"light_vs.cso", L"light_ps.cso");
-
+	
 	//load Textures
 	CreateDDSTextureFromFile(device, L"seafloor.dds",		nullptr,	m_texture1.ReleaseAndGetAddressOf());
-	CreateDDSTextureFromFile(device, L"EvilDrone_Diff.dds", nullptr,	m_texture2.ReleaseAndGetAddressOf());
+	m_fxFactory->CreateTexture(L"EvilDrone_Diff.png",context, m_texture2.ReleaseAndGetAddressOf());
+	// CreateDDSTextureFromFile(device, L"EvilDrone_Diff.dds", nullptr,	m_texture2.ReleaseAndGetAddressOf());
 }
 
 // Allocate all memory resources that change on a window SizeChanged event.

@@ -11,6 +11,9 @@
 #include "Input.h"
 #include "Camera.h"
 
+// #define DXTK_AUDIO
+#include "Audio.h"
+
 
 // A basic game implementation that creates a D3D11 device and
 // provides a game loop.
@@ -40,6 +43,7 @@ public:
     void OnWindowSizeChanged(int width, int height);
 	int Height;
 	int Width;
+
 #ifdef DXTK_AUDIO
     void NewAudioDevice();
 #endif
@@ -100,8 +104,6 @@ private:
 	ModelClass																m_BasicModel;
 	ModelClass																m_BasicModel2;
 	ModelClass																m_BasicModel3;
-
-
 
 #ifdef DXTK_AUDIO
     std::unique_ptr<DirectX::AudioEngine>                                   m_audEngine;
