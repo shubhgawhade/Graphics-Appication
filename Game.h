@@ -98,6 +98,8 @@ private:
 	//textures 
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>                        m_texture1;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>                        m_texture2;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>                        grassAlbedo;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>                        grassNormal;
 
 	//Shaders
 	Shader																	m_BasicShaderPair;

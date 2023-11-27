@@ -8,12 +8,15 @@ public:
 	void							Update();
 	DirectX::SimpleMath::Matrix		getCameraMatrix();
 	void							setPosition(DirectX::SimpleMath::Vector3 newPosition);
+	void							setSmoothPosition(DirectX::SimpleMath::Vector3 newPosition);
 	DirectX::SimpleMath::Vector3	getPosition();
 	DirectX::SimpleMath::Vector3	getForward();
 	DirectX::SimpleMath::Vector3	getRight();
 	void							setRotation(DirectX::SimpleMath::Vector3 newRotation);
+	void							setSmoothRotation(DirectX::SimpleMath::Vector3 newRotation);
 	DirectX::SimpleMath::Vector3	getRotation();
 	float							getMoveSpeed();
+	float							getBoostSpeed();
 	float							getRotationSpeed();
 
 private:
@@ -26,6 +29,7 @@ private:
 	DirectX::SimpleMath::Vector3	m_orientation;			//vector storing pitch yaw and roll. 
 
 	float	m_movespeed ;	
+	float	m_boostspeed ;	
 	float	m_camRotRate;
 	bool	active;
 };

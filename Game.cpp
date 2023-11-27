@@ -32,6 +32,9 @@ Game::~Game()
 #endif
 }
 
+Vector3 position;
+Vector3 rotation;
+
 // Initialize the Direct3D resources required to run.
 void Game::Initialize(HWND window, int width, int height)
 {
@@ -56,11 +59,13 @@ void Game::Initialize(HWND window, int width, int height)
 
 	//setup camera
 	m_Camera01.setPosition(Vector3(0.0f, 0.0f, 4.0f));
-	m_Camera01.setRotation(Vector3(-90.0f, -180.0f, 0.0f));	//orientation is -90 becuase zero will be looking up at the sky straight up.
-    //m_Camera01.active = true;
+	m_Camera01.setRotation(Vector3(-90.0f, 180.0f, 0.0f));	//orientation is -90 becuase zero will be looking up at the sky straight up.
+	position = m_Camera01.getPosition(); //get the position
+	rotation = m_Camera01.getRotation(); //get the rotation
+	//m_Camera01.active = true;
 
-    m_Camera02.setPosition(Vector3(0.0f, 0.0f, -4.0f));
-    m_Camera02.setRotation(Vector3(-90.0f, -180.0f, 0.0f)); 
+    // m_Camera02.setPosition(Vector3(0.0f, 0.0f, -4.0f));
+    // m_Camera02.setRotation(Vector3(-90.0f, -180.0f, 0.0f)); 
     //m_Camera02.active = false;
 	
 #ifdef DXTK_AUDIO
@@ -122,7 +127,6 @@ void Game::Tick()
 
 	
 }
-Vector3 rotation;
 
 // Updates the world.
 void Game::Update(DX::StepTimer const& timer)
@@ -141,38 +145,51 @@ void Game::Update(DX::StepTimer const& timer)
 	// 	m_Camera01.setRotation(rotation);
 	// }
 
-	Vector3 position = m_Camera01.getPosition(); //get the position
+	Vector3 dir;
 	
 	if (m_gameInputCommands.left)
 	{
-		position -= (m_Camera01.getRight() * m_Camera01.getMoveSpeed() * m_timer.GetElapsedSeconds()); //add the forward vector
-		m_Camera01.setPosition(position);
+		dir -= (m_Camera01.getRight() * m_timer.GetElapsedSeconds()); //add the left vector
+		// m_Camera01.setPosition(position);
 	}
 	if (m_gameInputCommands.right)
 	{
-		position += (m_Camera01.getRight() * m_Camera01.getMoveSpeed() * m_timer.GetElapsedSeconds()); //add the forward vector
-		m_Camera01.setPosition(position);
+		dir += (m_Camera01.getRight() * m_timer.GetElapsedSeconds()); //add the right vector
+		// m_Camera01.setPosition(position);
 	}
 	if(m_gameInputCommands.up)
 	{
-		position += (m_Camera01.getRight().Cross(m_Camera01.getForward()) * m_Camera01.getMoveSpeed() * m_timer.GetElapsedSeconds()); //add the forward vector
-		m_Camera01.setPosition(position);
+		dir += (m_Camera01.getRight().Cross(m_Camera01.getForward()) * m_timer.GetElapsedSeconds()); //add the up vector
+		// m_Camera01.setPosition(position);
 	}
 	if(m_gameInputCommands.down)
 	{
-		position -= (m_Camera01.getRight().Cross(m_Camera01.getForward()) * m_Camera01.getMoveSpeed() * m_timer.GetElapsedSeconds()); //add the forward vector
-		m_Camera01.setPosition(position);
+		dir -= (m_Camera01.getRight().Cross(m_Camera01.getForward()) * m_timer.GetElapsedSeconds()); //add the down vector
+		// m_Camera01.setPosition(position);
 	}
 	if (m_gameInputCommands.forward)
 	{
-        position += (m_Camera01.getForward() * m_Camera01.getMoveSpeed() * m_timer.GetElapsedSeconds()); //add the forward vector
-		m_Camera01.setPosition(position);
+        dir += (m_Camera01.getForward() * m_timer.GetElapsedSeconds()); //add the forward vector
+		// m_Camera01.setPosition(position);
 	}
 	if (m_gameInputCommands.back)
 	{
-		position -= (m_Camera01.getForward()*m_Camera01.getMoveSpeed()) * m_timer.GetElapsedSeconds(); //add the forward vector
-		m_Camera01.setPosition(position);
+		dir -= (m_Camera01.getForward()* m_timer.GetElapsedSeconds()); //add the back vector
+		// m_Camera01.setPosition(position);
 	}
+
+	// Normalize movement direction to prevent faster diagonal speed
+	dir.Normalize();
+	
+	if(m_gameInputCommands.boost)
+	{
+		dir*=m_Camera01.getBoostSpeed();
+	}
+
+	dir*=m_Camera01.getMoveSpeed();
+	
+	position+=dir;
+	m_Camera01.setSmoothPosition(position);
 	
     // if (m_gameInputCommands.rotLeft)
     // {
@@ -187,26 +204,17 @@ void Game::Update(DX::StepTimer const& timer)
     //     m_Camera01.setRotation(rotation);
     // }
 
-	float screenRatioY = m_gameInputCommands.mouseY / static_cast<float>(Height);
-	float screenRatioX = m_gameInputCommands.mouseX / static_cast<float>(Width);
+	// float screenRatioY = m_gameInputCommands.mouseY / static_cast<float>(Height);
+	// float screenRatioX = m_gameInputCommands.mouseX / static_cast<float>(Width);
 	// m_gameInputCommands.mouseY = -1 + screenRatioY * 2;
 	// m_gameInputCommands.mouseX = -1 + screenRatioX * 2;
 
-	rotation += Vector3(0, -m_gameInputCommands.mouseX,-m_gameInputCommands.mouseY);
+	rotation += Vector3(0, -m_gameInputCommands.mouseX * m_Camera01.getRotationSpeed(),-m_gameInputCommands.mouseY * m_Camera01.getRotationSpeed());
 
 	rotation.z = std::min(90.0f, rotation.z);
 	rotation.z = std::max(-90.0f, rotation.z);
-	// if(rotation.z > 90)
-	// {
-	// 	rotation.z = 90;
-	// }
-	// else if(rotation.z < -90)
-	// {
-	// 	rotation.z = -90;
-	// }
 
-	// rotation = XMVectorClamp(rotation, Vector3(0,-m_gameInputCommands.mouseX,-180),Vector3(0,-m_gameInputCommands.mouseX,180));
-	m_Camera01.setRotation(rotation);
+	m_Camera01.setSmoothRotation(rotation);
     
     if (m_gameInputCommands.camera2)
     {
@@ -288,7 +296,7 @@ void Game::Render()
 
 	// Turn our shaders on,  set parameters
 	m_BasicShaderPair.EnableShader(context);
-	m_BasicShaderPair.SetShaderParameters(context, &m_world, &m_view, &m_projection, &m_Light, m_texture1.Get());
+	m_BasicShaderPair.SetShaderParameters(context, &m_world, &m_view, &m_projection, &m_Light, m_texture1.Get());//, grassNormal.Get());
 
 	//render our model
 	m_BasicModel.Render(context);
@@ -310,7 +318,7 @@ void Game::Render()
 
 	//setup and draw cube
 	m_BasicShaderPair.EnableShader(context);
-	m_BasicShaderPair.SetShaderParameters(context, &m_world, &m_view, &m_projection, &m_Light, m_texture1.Get());
+	m_BasicShaderPair.SetShaderParameters(context, &m_world, &m_view, &m_projection, &m_Light, grassAlbedo.Get());//, grassNormal.Get());
 	m_BasicModel3.Render(context);
 
 
@@ -427,8 +435,10 @@ void Game::CreateDeviceDependentResources()
 	m_BasicShaderPair.InitStandard(device, L"light_vs.cso", L"light_ps.cso");
 	
 	//load Textures
-	CreateDDSTextureFromFile(device, L"seafloor.dds",		nullptr,	m_texture1.ReleaseAndGetAddressOf());
-	m_fxFactory->CreateTexture(L"EvilDrone_Diff.png",context, m_texture2.ReleaseAndGetAddressOf());
+	m_fxFactory->CreateTexture(L"Textures/Grass Albedo.png",context, grassAlbedo.ReleaseAndGetAddressOf());
+	m_fxFactory->CreateTexture(L"Textures/Grass Normal.png",context, grassNormal.ReleaseAndGetAddressOf());
+	m_fxFactory->CreateTexture(L"Textures/EvilDrone_Diff.png",context, m_texture2.ReleaseAndGetAddressOf());
+	CreateDDSTextureFromFile(device, L"Textures/seafloor.dds", nullptr,	m_texture1.ReleaseAndGetAddressOf());
 	// CreateDDSTextureFromFile(device, L"EvilDrone_Diff.dds", nullptr,	m_texture2.ReleaseAndGetAddressOf());
 }
 

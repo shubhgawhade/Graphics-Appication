@@ -30,9 +30,10 @@ Camera::Camera()
 	m_right.y = 0.0f;
 	m_right.z = 0.0f;
 	
-	//
-	m_movespeed = 10.0;
-	m_camRotRate = 1.0;
+	// Speed variables
+	m_movespeed = 0.1f;
+	m_boostspeed = 30;
+	m_camRotRate = 0.5f;
 
 	//active = false;
 	//force update with initial values to generate other camera data correctly for first update. 
@@ -48,19 +49,20 @@ void Camera::Update()
 {
 	if (active)
 	{
-		DirectX::SimpleMath::Quaternion a;
-		a.x = sin(DirectX::XMConvertToRadians(m_orientation.y) * m_camRotRate/2);
-		a.y = sin(DirectX::XMConvertToRadians(m_orientation.z) * m_camRotRate/2);
-		a.z = cos(DirectX::XMConvertToRadians(m_orientation.y) * m_camRotRate/2);
-		a.w = 1;
+		// DirectX::SimpleMath::Quaternion newRot;
+		// newRot.x = sin(DirectX::XMConvertToRadians(m_orientation.y) * m_camRotRate/2);
+		// newRot.y = sin(DirectX::XMConvertToRadians(m_orientation.z) * m_camRotRate/2);
+		// newRot.z = cos(DirectX::XMConvertToRadians(m_orientation.y) * m_camRotRate/2);
+		// newRot.w = 1;
 
-		DirectX::SimpleMath::Quaternion currentRot = DirectX::SimpleMath::Quaternion(m_forward.x, m_forward.y, m_forward.z,1);
+		// DirectX::SimpleMath::Quaternion currentRot = DirectX::SimpleMath::Quaternion(m_forward.x, m_forward.y, m_forward.z,1);
+
 		//rotation in yaw - using the paramateric equation of a circle
-		m_forward += DirectX::XMQuaternionSlerp(currentRot, a,0.3f);
-		// m_forward.x = sin(DirectX::XMConvertToRadians(m_orientation.y) * m_camRotRate/10);
-		// m_forward.y = sin(m_orientation.z) * m_camRotRate;
-		// m_forward.z = cos(DirectX::XMConvertToRadians(m_orientation.y) * m_camRotRate/10);
-		// DirectX::
+		// m_forward += DirectX::XMQuaternionSlerp(currentRot, newRot,0.3f);
+
+		m_forward.x = sin(DirectX::XMConvertToRadians(m_orientation.y));
+		m_forward.y = sin(DirectX::XMConvertToRadians(m_orientation.z));
+		m_forward.z = cos(DirectX::XMConvertToRadians(m_orientation.y));
 		m_forward.Normalize();
 
 		//m_forward.x = sin((m_orientation.z) * 3.1415f / 180.0f);
@@ -72,10 +74,6 @@ void Camera::Update()
 
 		//update lookat point
 		m_lookat = m_position + m_forward;
-
-		//DirectX::SimpleMath::Matrix camRotationMatrix = DirectX::SimpleMath::XMMATRIX::XMMatrixRotationRollPitchYaw(m_orientation.z, m_orientation.y, 0);
-		//camTarget = XMVector3TransformCoord(DefaultForward, camRotationMatrix);
-		//camTarget = XMVector3Normalize(camTarget);
 
 		//apply camera vectors and create camera matrix
 		m_cameraMatrix = (DirectX::SimpleMath::Matrix::CreateLookAt(m_position, m_lookat, DirectX::SimpleMath::Vector3::UnitY));
@@ -91,6 +89,13 @@ void Camera::setPosition(DirectX::SimpleMath::Vector3 newPosition)
 {
 	m_position = newPosition;
 }
+
+void Camera::setSmoothPosition(DirectX::SimpleMath::Vector3 newPosition)
+{
+	// Smooth movement using Lerp
+	m_position = XMVectorLerp(m_position, newPosition, 0.01f);
+}
+
 
 DirectX::SimpleMath::Vector3 Camera::getPosition()
 {
@@ -112,6 +117,13 @@ void Camera::setRotation(DirectX::SimpleMath::Vector3 newRotation)
 	m_orientation = newRotation;
 }
 
+void Camera::setSmoothRotation(DirectX::SimpleMath::Vector3 newRotation)
+{
+	// Smooth rotation using Slerp
+	m_orientation = XMQuaternionSlerp(m_orientation, newRotation,0.3f);
+}
+
+
 DirectX::SimpleMath::Vector3 Camera::getRotation()
 {
 	return m_orientation;
@@ -120,6 +132,11 @@ DirectX::SimpleMath::Vector3 Camera::getRotation()
 float Camera::getMoveSpeed()
 {
 	return m_movespeed;
+}
+
+float Camera::getBoostSpeed()
+{
+	return m_boostspeed;
 }
 
 float Camera::getRotationSpeed()

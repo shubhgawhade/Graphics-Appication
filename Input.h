@@ -12,6 +12,7 @@ struct InputCommands
 	bool down;
 	bool right;
 	bool left;
+	bool boost;
 	bool rotRight;
 	bool rotLeft;
 	bool camera1;

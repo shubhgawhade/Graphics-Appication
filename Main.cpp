@@ -17,7 +17,7 @@ namespace
 };
 
 //GLOBALS
-static bool s_fullscreen = false;	//Fullscreen mode on or off. 
+static bool s_fullscreen = true;	//Fullscreen mode on or off. 
 
 //PRE DECLARATION OF CALLBACK. 
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);

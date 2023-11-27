@@ -14,7 +14,9 @@ void Input::Initialise(HWND window)
 {
 	m_keyboard = std::make_unique<DirectX::Keyboard>();
 	m_mouse = std::make_unique<DirectX::Mouse>();
+	m_mouse->SetVisible(false);
 	m_mouse->SetWindow(window);
+	m_mouse->SetMode(DirectX::Mouse::MODE_RELATIVE);
 	m_quitApp = false;
 
 	m_GameInput.forward		= false;
@@ -23,6 +25,7 @@ void Input::Initialise(HWND window)
 	m_GameInput.down		= false;
 	m_GameInput.right		= false;
 	m_GameInput.left		= false;
+	m_GameInput.boost		= false;
 	m_GameInput.rotRight	= false;
 	m_GameInput.rotLeft		= false;
 	m_GameInput.camera1		= true;
@@ -36,8 +39,6 @@ void Input::Update()
 	auto kb = m_keyboard->GetState();	//updates the basic keyboard state
 	m_KeyboardTracker.Update(kb);		//updates the more feature filled state. Press / release etc. 
 	auto mouse = m_mouse->GetState();   //updates the basic mouse state
-	m_mouse->SetMode(DirectX::Mouse::MODE_RELATIVE);
-	m_mouse->SetVisible(false);
 	m_MouseTracker.Update(mouse);		//updates the more advanced mouse state. 
 
 	if (kb.Escape)// check has escape been pressed.  if so, quit out. 
@@ -75,6 +76,15 @@ void Input::Update()
 	//E key
 	if (kb.E)	m_GameInput.up = true;
 	else		m_GameInput.up = false;
+
+	if(m_KeyboardTracker.IsKeyPressed(DirectX::Keyboard::LeftShift))
+	{
+		m_GameInput.boost = true;
+	}
+	else
+	{
+		m_GameInput.boost = false;
+	}
 
 	//C key released
 	if (m_KeyboardTracker.released.C)	m_GameInput.camera2 = !m_GameInput.camera2;
