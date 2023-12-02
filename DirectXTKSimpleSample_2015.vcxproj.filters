@@ -35,6 +35,8 @@
       <Filter>Rendering</Filter>
     </ClInclude>
     <ClInclude Include="Input.h" />
+    <ClInclude Include="particleshaderclass.h" />
+    <ClInclude Include="ParticleSystemClass.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -56,6 +58,8 @@
       <Filter>Rendering</Filter>
     </ClCompile>
     <ClCompile Include="Input.cpp" />
+    <ClCompile Include="particleshaderclass.cpp" />
+    <ClCompile Include="ParticleSystemClass.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resource.rc" />
@@ -87,6 +91,12 @@
       <Filter>Assets</Filter>
     </FxCompile>
     <FxCompile Include="light_vs.hlsl">
+      <Filter>Assets</Filter>
+    </FxCompile>
+    <FxCompile Include="particle_ps.hlsl">
+      <Filter>Assets</Filter>
+    </FxCompile>
+    <FxCompile Include="particle_vs.hlsl">
       <Filter>Assets</Filter>
     </FxCompile>
   </ItemGroup>

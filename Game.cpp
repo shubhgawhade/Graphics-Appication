@@ -294,7 +294,21 @@ void Game::Render()
 //	context->RSSetState(m_states->Wireframe());
 
 
-	// Turn our shaders on,  set parameters
+
+	// Turn our shaders on, set parameters
+	m_BasicShaderPair.EnableShader(context);
+	m_BasicShaderPair.SetShaderParameters(context, &m_world, &m_view, &m_projection, &m_Light, m_texture1.Get());
+
+	//render our astronaut model
+	m_astronaut.Render(context);
+	
+	//prepare transform for object.
+	m_world = SimpleMath::Matrix::Identity; //set world back to identity
+	SimpleMath::Matrix astroPos = SimpleMath::Matrix::CreateTranslation(-5.0f, 0.0f, 0.0f);
+	m_world = m_world * astroPos;
+	
+
+	// Turn our shaders on, set parameters
 	m_BasicShaderPair.EnableShader(context);
 	m_BasicShaderPair.SetShaderParameters(context, &m_world, &m_view, &m_projection, &m_Light, m_texture1.Get());//, grassNormal.Get());
 
@@ -302,6 +316,7 @@ void Game::Render()
 	m_BasicModel.Render(context);
 
 	//prepare transform for second object.
+	m_world = SimpleMath::Matrix::Identity; //set world back to identity
 	SimpleMath::Matrix newPosition = SimpleMath::Matrix::CreateTranslation(2.0f, 0.0f, 0.0f);
 	m_world = m_world * newPosition;
 
@@ -321,6 +336,44 @@ void Game::Render()
 	m_BasicShaderPair.SetShaderParameters(context, &m_world, &m_view, &m_projection, &m_Light, grassAlbedo.Get());//, grassNormal.Get());
 	m_BasicModel3.Render(context);
 
+	// SKYBOX
+	for (int i =0; i< 2; i++)
+	{
+		m_world = SimpleMath::Matrix::Identity; //set world back to identity
+		SimpleMath::Matrix skyBoxRotation;
+		SimpleMath::Matrix skyBoxScale;
+		if(i%2==0)
+		{
+			skyBoxRotation = Matrix::CreateRotationY(m_timer.GetTotalSeconds()/50);
+			skyBoxScale = SimpleMath::Matrix::CreateScale(50.0f, 50.0f, 50.0f);
+	
+		}
+		else
+		{
+			skyBoxRotation = Matrix::CreateRotationY(-m_timer.GetTotalSeconds()/50);
+			skyBoxScale = SimpleMath::Matrix::CreateScale(20.0f, 20.0f, 20.0f);
+		}
+		SimpleMath::Matrix skyBoxTranslation = Matrix::CreateTranslation(m_Camera01.getPosition());
+		
+		m_world = m_world * skyBoxRotation * skyBoxScale * skyBoxTranslation;
+	
+		m_BasicShaderPair.EnableShader(context);
+		m_BasicShaderPair.SetShaderParameters(context, &m_world, &m_view, &m_projection, &m_Light, starsTexture.Get());
+		m_skyBox.Render(context);
+	}
+
+	// PARTICLE SYSTEM
+	
+	m_world = SimpleMath::Matrix::Identity; //set world back to identity
+	SimpleMath::Matrix newPosition3 = SimpleMath::Matrix::CreateTranslation(0.0f, 0.0f, 2.0f);
+	// SimpleMath::Matrix lookAt = Matrix::CreateLookAt(Vector3(0,0,2), m_Camera01.getForward(), m_Camera01.getForward().Cross(m_Camera01.getRight()));
+	// SimpleMath::Matrix particleRotation = Matrix::CreateRotationY(XMConvertToRadians(180));
+	m_ParticleSystem.Render(context, m_Camera01);
+	m_world = m_world * newPosition3;
+	m_ParticleSystem.Frame(5, m_deviceResources->GetD3DDeviceContext());
+	m_ParticleShader.Render(context, m_ParticleSystem.GetIndexCount(), &m_world, &m_view, &m_projection, 
+					  fxtexture.Get());
+	
 
     // Show the new frame.
     m_deviceResources->Present();
@@ -336,7 +389,7 @@ void Game::Clear()
     auto renderTarget = m_deviceResources->GetRenderTargetView();
     auto depthStencil = m_deviceResources->GetDepthStencilView();
 
-    context->ClearRenderTargetView(renderTarget, Colors::CornflowerBlue);
+    context->ClearRenderTargetView(renderTarget, Colors::Black);
     context->ClearDepthStencilView(depthStencil, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
     context->OMSetRenderTargets(1, &renderTarget, depthStencil);
 
@@ -431,14 +484,31 @@ void Game::CreateDeviceDependentResources()
 	m_BasicModel2.InitializeModel(device,"drone.obj");
 	m_BasicModel3.InitializeBox(device, 10.0f, 0.1f, 10.0f);	//box includes dimensions
 
+	m_skyBox.InitializeModel(device, "Models/skybox.obj");
+	m_astronaut.InitializeModel(device, "Models/astronaut.obj");
+
 	//load and set up our Vertex and Pixel Shaders
 	m_BasicShaderPair.InitStandard(device, L"light_vs.cso", L"light_ps.cso");
+	// m_BasicShaderPair1.InitStandard(device, L"colour_vs.cso", L"colour_ps.cso");
+
+	
+	// m_ParticleShader = new ParticleShaderClass;
+	m_ParticleShader.InitializeShader(device, L"particle_vs.cso", L"particle_ps.cso");
+	
+	// Create the particle system object.
+	// m_ParticleSystem = new ParticleSystemClass;
+	
+	// Initialize the particle system object.
+	m_ParticleSystem.Initialize(device);
 	
 	//load Textures
 	m_fxFactory->CreateTexture(L"Textures/Grass Albedo.png",context, grassAlbedo.ReleaseAndGetAddressOf());
 	m_fxFactory->CreateTexture(L"Textures/Grass Normal.png",context, grassNormal.ReleaseAndGetAddressOf());
 	m_fxFactory->CreateTexture(L"Textures/EvilDrone_Diff.png",context, m_texture2.ReleaseAndGetAddressOf());
+	m_fxFactory->CreateTexture(L"Textures/starsTexture2.png",context, starsTexture.ReleaseAndGetAddressOf());
+	m_fxFactory->CreateTexture(L"Textures/particles.png",context, fxtexture.ReleaseAndGetAddressOf());
 	CreateDDSTextureFromFile(device, L"Textures/seafloor.dds", nullptr,	m_texture1.ReleaseAndGetAddressOf());
+	// CreateDDSTextureFromFile(device, L"Textures/particles.dds", nullptr,	fxtexture.ReleaseAndGetAddressOf());
 	// CreateDDSTextureFromFile(device, L"EvilDrone_Diff.dds", nullptr,	m_texture2.ReleaseAndGetAddressOf());
 }
 

@@ -47,13 +47,16 @@ private:
 	bool InitializeBuffers(ID3D11Device*);
 	void ShutdownBuffers();
 	void RenderBuffers(ID3D11DeviceContext*);
-	bool LoadModel(char*);
+	bool LoadModel(char*, ID3D11Device* device);
+	void ProcessObject(std::vector<XMFLOAT3>, std::vector<XMFLOAT2>, std::vector<XMFLOAT3>, std::vector<unsigned int>,
+		ID3D11Device* device);
 
 	void ReleaseModel();
 
 private:
 	ID3D11Buffer *m_vertexBuffer, *m_indexBuffer;
 	int m_vertexCount, m_indexCount;
+	int objectIndex = 0;
 
 	//arrays for our generated objects Made by directX
 	std::vector<VertexPositionNormalTexture> preFabVertices;

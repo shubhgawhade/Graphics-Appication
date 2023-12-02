@@ -13,6 +13,8 @@
 
 // #define DXTK_AUDIO
 #include "Audio.h"
+#include "particleshaderclass.h"
+#include "ParticleSystemClass.h"
 
 
 // A basic game implementation that creates a D3D11 device and
@@ -100,12 +102,22 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>                        m_texture2;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>                        grassAlbedo;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>                        grassNormal;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>                        fxtexture;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>                        starsTexture;
+
+	ParticleShaderClass m_ParticleShader;
+	ParticleSystemClass m_ParticleSystem;
+	D3D11_BLEND_DESC blendStateDescription;
+
 
 	//Shaders
 	Shader																	m_BasicShaderPair;
+	Shader																	m_BasicShaderPair1;
 	ModelClass																m_BasicModel;
 	ModelClass																m_BasicModel2;
 	ModelClass																m_BasicModel3;
+	ModelClass																m_skyBox;
+	ModelClass																m_astronaut;
 
 #ifdef DXTK_AUDIO
     std::unique_ptr<DirectX::AudioEngine>                                   m_audEngine;

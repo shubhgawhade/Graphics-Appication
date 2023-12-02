@@ -19,8 +19,9 @@ ModelClass::~ModelClass()
 
 bool ModelClass::InitializeModel(ID3D11Device *device, char* filename)
 {
-	LoadModel(filename);
+	LoadModel(filename, device);
 	InitializeBuffers(device);
+
 	return false;
 }
 
@@ -217,7 +218,7 @@ void ModelClass::RenderBuffers(ID3D11DeviceContext* deviceContext)
 	// Set vertex buffer stride and offset.
 	stride = sizeof(VertexType); 
 	offset = 0;
-    
+	
 	// Set the vertex buffer to active in the input assembler so it can be rendered.
 	deviceContext->IASetVertexBuffers(0, 1, &m_vertexBuffer, &stride, &offset);
 
@@ -231,12 +232,13 @@ void ModelClass::RenderBuffers(ID3D11DeviceContext* deviceContext)
 }
 
 
-bool ModelClass::LoadModel(char* filename)
+bool ModelClass::LoadModel(char* filename, ID3D11Device* device)
 {
 	std::vector<XMFLOAT3> verts;
-	std::vector<XMFLOAT3> norms;
 	std::vector<XMFLOAT2> texCs;
+	std::vector<XMFLOAT3> norms;
 	std::vector<unsigned int> faces;
+	int objectIndex = 0;
 
 	FILE* file;// = fopen(filename, "r");
 	errno_t err;
@@ -293,18 +295,36 @@ bool ModelClass::LoadModel(char* filename)
 				{
 					faces.push_back(face[i]);
 				}
-
-
 			}
+			// else if (strcmp(lineHeader, "o") == 0) // Object
+			// {
+			// 	// If this is not the first object, process the previous object's data
+			// 	if (objectIndex > 0)
+			// 	{
+			// 		ProcessObject(verts, texCs, norms, faces, device);
+			// 	}
+			//
+			// 	// Clear the vectors for the next object
+			// 	// verts.clear();
+			// 	// norms.clear();
+			// 	// texCs.clear();
+			// 	// faces.clear();
+			// 	
+			// 	// Increment the object index
+			// 	objectIndex++;
+			// }
+
 		}
 	}
+
+	// ProcessObject(verts, texCs, norms, faces, device);
 
 	int vIndex = 0, nIndex = 0, tIndex = 0;
 	int numFaces = (int)faces.size() / 9;
 
 	//// Create the model using the vertex count that was read in.
 	m_vertexCount = numFaces * 3;
-//	model = new ModelType[vertexCount];
+	//	model = new ModelType[vertexCount];
 
 	// "Unroll" the loaded obj information into a list of triangles.
 	for (int f = 0; f < (int)faces.size(); f += 3)
@@ -332,11 +352,58 @@ bool ModelClass::LoadModel(char* filename)
 
 	m_indexCount = vIndex;
 
+	// Clear the vectors for the next object
 	verts.clear();
 	norms.clear();
 	texCs.clear();
 	faces.clear();
-	return true;
+	
+	return true;	
+}
+
+void ModelClass::ProcessObject(std::vector<XMFLOAT3> verts, std::vector<XMFLOAT2> texCs, std::vector<XMFLOAT3> norms,
+	std::vector<unsigned int> faces, ID3D11Device* device)
+{
+	int vIndex = 0, nIndex = 0, tIndex = 0;
+	int numFaces = (int)faces.size() / 9;
+
+	//// Create the model using the vertex count that was read in.
+	m_vertexCount = numFaces * 3;
+	//	model = new ModelType[vertexCount];
+
+	// "Unroll" the loaded obj information into a list of triangles.
+	for (int f = 0; f < (int)faces.size(); f += 3)
+	{
+		VertexPositionNormalTexture tempVertex;
+		tempVertex.position.x = verts[(faces[f + 0] - 1)].x;
+		tempVertex.position.y = verts[(faces[f + 0] - 1)].y;
+		tempVertex.position.z = verts[(faces[f + 0] - 1)].z;
+
+		tempVertex.textureCoordinate.x = texCs[(faces[f + 1] - 1)].x;
+		tempVertex.textureCoordinate.y = texCs[(faces[f + 1] - 1)].y;
+			
+		tempVertex.normal.x = norms[(faces[f + 2] - 1)].x;
+		tempVertex.normal.y = norms[(faces[f + 2] - 1)].y;
+		tempVertex.normal.z = norms[(faces[f + 2] - 1)].z;
+
+		//increase index count
+		preFabVertices.push_back(tempVertex);
+		
+		int tempIndex;
+		tempIndex = vIndex;
+		preFabIndices.push_back(tempIndex);
+		vIndex++;
+	}
+
+	m_indexCount = vIndex;
+
+	// Clear the vectors for the next object
+	verts.clear();
+	norms.clear();
+	texCs.clear();
+	faces.clear();
+
+	InitializeBuffers(device);
 }
 
 
