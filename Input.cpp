@@ -81,7 +81,7 @@ void Input::Update()
 	{
 		m_GameInput.boost = true;
 	}
-	else
+	else if(m_KeyboardTracker.IsKeyReleased(DirectX::Keyboard::LeftShift))
 	{
 		m_GameInput.boost = false;
 	}

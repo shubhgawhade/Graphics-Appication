@@ -11,7 +11,7 @@
 #include "Input.h"
 #include "Camera.h"
 
-// #define DXTK_AUDIO
+#define DXTK_AUDIO
 #include "Audio.h"
 #include "particleshaderclass.h"
 #include "ParticleSystemClass.h"
@@ -104,6 +104,20 @@ private:
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>                        grassNormal;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>                        fxtexture;
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>                        starsTexture;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>                        starsTexture1;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>                        sunTexture;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>                        mercuryTexture;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>                        venusTexture;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>                        earthTexture;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>                        moonTexture;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>                        marsTexture;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>                        jupiterTexture;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>                        saturnTexture;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>                        saturnRingTexture;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>                        uranusTexture;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>                        neptuneTexture;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>                        rocketTexture;
+	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>                        asteroidTexture;
 
 	ParticleShaderClass m_ParticleShader;
 	ParticleSystemClass m_ParticleSystem;
@@ -118,13 +132,46 @@ private:
 	ModelClass																m_BasicModel3;
 	ModelClass																m_skyBox;
 	ModelClass																m_astronaut;
+	ModelClass																m_sun;
+	ModelClass																m_saturnRing;
+	ModelClass																m_rocket;
+	ModelClass																m_asteroid1;
+	ModelClass																m_asteroid2;
+	ModelClass																m_asteroid3;
+	ModelClass																m_asteroid4;
+	ModelClass																m_asteroid5;
+	ModelClass																m_asteroid6;
+	// ModelClass																m_mercuryPlanet;
+	// ModelClass																m_venusPlanet;
+	// ModelClass																m_earthPlanet;
+
+	bool asteroidsInitiaized = false;
+    class AsteroidClass
+    {
+    public:
+	    ModelClass model;
+    	float scale;
+    	float initDistance;
+    	SimpleMath::Vector3 localRotation;
+    	SimpleMath::Vector2 axialSpeed;
+    	float revolutionSpeed;
+    };
+
+	// int numberOfAsteroids = 3;
+	// AsteroidClass																m_asteroids[3];
+	int numberOfAsteroids;
+	AsteroidClass*																m_asteroids;
 
 #ifdef DXTK_AUDIO
     std::unique_ptr<DirectX::AudioEngine>                                   m_audEngine;
     std::unique_ptr<DirectX::WaveBank>                                      m_waveBank;
     std::unique_ptr<DirectX::SoundEffect>                                   m_soundEffect;
+    std::unique_ptr<DirectX::SoundEffect>                                   m_soundJetpack;
+    std::unique_ptr<DirectX::SoundEffect>                                   m_soundJetpackBoost;
     std::unique_ptr<DirectX::SoundEffectInstance>                           m_effect1;
     std::unique_ptr<DirectX::SoundEffectInstance>                           m_effect2;
+    std::unique_ptr<DirectX::SoundEffectInstance>                           m_effectJetpack;
+    std::unique_ptr<DirectX::SoundEffectInstance>                           m_effectJetpackBoost;
 #endif
     
 

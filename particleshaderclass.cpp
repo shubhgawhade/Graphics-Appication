@@ -41,13 +41,13 @@ ParticleShaderClass::~ParticleShaderClass()
 // }
 
 
-void ParticleShaderClass::Shutdown()
-{
-	// Shutdown the vertex and pixel shaders as well as the related objects.
-	// ShutdownShader();
-
-	return;
-}
+// void ParticleShaderClass::Shutdown()
+// {
+// 	// Shutdown the vertex and pixel shaders as well as the related objects.
+// 	ShutdownShader();
+//
+// 	return;
+// }
 
 
 bool ParticleShaderClass::Render(ID3D11DeviceContext* deviceContext, int indexCount, DirectX::SimpleMath::Matrix* worldMatrix, DirectX::SimpleMath::Matrix* viewMatrix, 

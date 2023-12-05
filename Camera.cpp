@@ -31,8 +31,8 @@ Camera::Camera()
 	m_right.z = 0.0f;
 	
 	// Speed variables
-	m_movespeed = 0.1f;
-	m_boostspeed = 30;
+	m_movespeed = 0.05f;
+	m_boostspeed = 2.5f;
 	m_camRotRate = 0.5f;
 
 	//active = false;

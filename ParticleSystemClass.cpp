@@ -104,7 +104,8 @@ bool ParticleSystemClass::InitializeParticleSystem()
     m_particleVelocityVariation = 0.2f;
 
     // Set the physical size of the particles.
-    m_particleSize = 0.02f;
+	// m_particleSize = 0.2f;
+	m_particleSize = 0.08f;
 
     // Set the number of particles to emit per second.
 	m_particlesPerSecond = 250.0f;
@@ -283,9 +284,12 @@ void ParticleSystemClass::EmitParticles(float frameTime)
 
 		velocity = m_particleVelocity + (((float)rand()-(float)rand())/RAND_MAX) * m_particleVelocityVariation;
 
-		red   = (((float)rand()-(float)rand())/RAND_MAX) + 0.5f;
-		green = (((float)rand()-(float)rand())/RAND_MAX) + 0.5f;
-		blue  = (((float)rand()-(float)rand())/RAND_MAX) + 0.5f;
+		red = 0.8f;
+		green = 0.5f;
+		blue = 0.1f;
+		// red   = (((float)rand()-(float)rand())/RAND_MAX) + 0.5f;
+		// green = (((float)rand()-(float)rand())/RAND_MAX) + 0.5f;
+		// blue  = (((float)rand()-(float)rand())/RAND_MAX) + 0.5f;
 
 		// Now since the particles need to be rendered from back to front for blending we have to sort the particle array.
 		// We will sort using Z depth so we need to find where in the list the particle should be inserted.
@@ -344,45 +348,30 @@ void ParticleSystemClass::UpdateParticles(float frameTime)
 	// Each frame we update all the particles by making them move downwards using their position, velocity, and the frame time.
 	for(i=0; i<m_currentParticleCount; i++)
 	{
-		m_particleList[i].positionZ = m_particleList[i].positionZ - (m_particleList[i].velocity * frameTime * 0.001f);
+		// if((int)frameTime%2== 0)
+		// {
+		// 	m_particleList[i].positionX = m_particleList[i].positionX - (m_particleList[i].velocity * frameTime * 0.001f);
+		// 	m_particleList[i].positionY = m_particleList[i].positionY - (m_particleList[i].velocity * frameTime * 0.001f);
+		// 	m_particleList[i].positionZ = m_particleList[i].positionZ - (m_particleList[i].velocity * frameTime * 0.001f);
+		// }
+		// else if((int)frameTime%2== 1)
+		// {
+		// 	m_particleList[i].positionX = m_particleList[i].positionX + (m_particleList[i].velocity * frameTime * 0.001f);
+		// 	m_particleList[i].positionY = m_particleList[i].positionY + (m_particleList[i].velocity * frameTime * 0.001f);
+		// 	m_particleList[i].positionZ = m_particleList[i].positionZ + (m_particleList[i].velocity * frameTime * 0.001f);
+		// }
+		// else
+		{
+			m_particleList[i].positionZ = m_particleList[i].positionZ - (m_particleList[i].velocity * frameTime * 0.001f);
+		}
 
 		// SimpleMath::Vector3 vec1 = m_Camera01.getForward();
 		// SimpleMath::Vector3 vec2 = m_particleList;
-
-		// LookAt(m_particleList[i]);
 		
 		// SortParticles(m_particleList[i]);
 	}
 
 	return;
-}
-
-SimpleMath::Matrix ParticleSystemClass::LookAt()
-{
-	// m_forward.Cross(DirectX::SimpleMath::Vector3::UnitY, m_right);
-	SimpleMath::Vector3 vect1;
-	DirectX::SimpleMath::Vector3::UnitY.SimpleMath::Vector3::Cross(DirectX::SimpleMath::Vector3::UnitX, vect1);
-	SimpleMath::Vector3 vect2 = m_Camera.getForward();
-	// SimpleMath::Vector3 dir;
-
-	// dir.x = acos( SimpleMath::Vector2(vect2.y,vect2.z).Dot( SimpleMath::Vector2(vect1.y,vect1.z) ) );
-	// dir.y = acos( SimpleMath::Vector2(vect2.x,vect2.z).Dot( SimpleMath::Vector2(vect1.x,vect1.z) ) );
-	// dir.z = acos( SimpleMath::Vector2(vect2.x,vect2.y).Dot( SimpleMath::Vector2(vect1.x,vect1.y) ) );
-	// dir.y = SimpleMath::Vector3::AngleBetween(dir, SimpleMath::Vector3::UnitY) * 180 / Math.PI;
-	// dir.z = SimpleMath::Vector3::AngleBetween(dir, SimpleMath::Vector3::UnitZ) * 180 / Math.PI;
-	
-	// return dir;
-	
-	lookAt = SimpleMath::Matrix::CreateLookAt(vect2, m_Camera.getPosition(), m_Camera.getRight().Cross(m_Camera.getForward()));
-	return lookAt;
-	
-	// particle.rotationX = dir.x;
-	// particle.rotationY = dir.y;
-	// particle.rotationZ = dir.z;
-	
-	// DirectX::SimpleMath::Vector3 particlePos = DirectX::SimpleMath::Vector3(particle.positionX,
-	// 		particle.positionY, particle.positionZ);
-	// lookAt = SimpleMath::Matrix::CreateLookAt(particlePos, m_Camera01.getPosition(), m_Camera01.getForward().Cross(-m_Camera01.getRight()));
 }
 
 // SORT WHILE UPDATE
@@ -445,7 +434,7 @@ void ParticleSystemClass::KillParticles()
 	// Kill all the particles that have gone below a certain height range.
 	for(i=0; i<m_maxParticles; i++)
 	{
-		if((m_particleList[i].active == true) && (m_particleList[i].positionY < -3.0f))
+		if((m_particleList[i].active == true) && (m_particleList[i].positionZ < -5.0f) || m_accumulatedTime > 3.0f)
 		{
 			m_particleList[i].active = false;
 			m_currentParticleCount--;

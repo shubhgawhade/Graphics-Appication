@@ -56,7 +56,7 @@ private:
 private:
 	ID3D11Buffer *m_vertexBuffer, *m_indexBuffer;
 	int m_vertexCount, m_indexCount;
-	int objectIndex = 0;
+	int objectIndex;
 
 	//arrays for our generated objects Made by directX
 	std::vector<VertexPositionNormalTexture> preFabVertices;
