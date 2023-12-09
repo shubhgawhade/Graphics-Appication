@@ -92,7 +92,7 @@ float4 main(InputType input) : SV_TARGET
 	// If pixel has alpha
 	if(textureColor.a < 1)
 	{
-		float averagecol = 1. - (textureColor.r+ textureColor.g + textureColor.b)/3.;
+		float averagecol = 1. - (textureColor.r + textureColor.g + textureColor.b)/3.;
 		float whitetoalpha = (averagecol) + textureColor.a;
 		color = color * averagecol;
 		color.a = whitetoalpha;

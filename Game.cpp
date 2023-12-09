@@ -81,17 +81,28 @@ void Game::Initialize(HWND window, int width, int height)
     m_audioTimerAcc = 10.f;
     m_retryDefault = false;
 
-    m_waveBank = std::make_unique<WaveBank>(m_audEngine.get(), L"Resources/Audio/adpcmdroid.xwb");
+    // m_waveBank = std::make_unique<WaveBank>(m_audEngine.get(), L"Resources/Audio/adpcmdroid.xwb");
+	m_waveBank = std::make_unique<WaveBank>(m_audEngine.get(), L"Resources/Audio/ProjectAudio.xwb");
 
     m_soundEffect = std::make_unique<SoundEffect>(m_audEngine.get(), L"Resources/Audio/MusicMono_adpcm.wav");
 
 	m_soundJetpack = std::make_unique<SoundEffect>(m_audEngine.get(), L"Resources/Audio/jetpack.wav");
-	m_soundJetpackBoost = std::make_unique<SoundEffect>(m_audEngine.get(), L"Resources/Audio/JetpackBoost.wav");
+	// m_soundJetpackBoost = std::make_unique<SoundEffect>(m_audEngine.get(), L"Resources/Audio/JetpackBoost.wav");
 
-	m_effect1 = m_soundEffect->CreateInstance();
-    m_effect2 = m_waveBank->CreateInstance(10);
-	m_effectJetpack = m_soundJetpack->CreateInstance();
-	m_effectJetpackBoost = m_soundJetpackBoost->CreateInstance();
+	m_effectJetpack = m_waveBank->CreateInstance(0u, SoundEffectInstance_Use3D);
+	m_effectJetpackBoost = m_waveBank->CreateInstance(1,SoundEffectInstance_Use3D);
+	m_effectRocket = m_waveBank->CreateInstance(2,SoundEffectInstance_Use3D);
+
+	m_effect1 = m_soundEffect->CreateInstance(SoundEffectInstance_Use3D);
+	// m_effect1->Play(true);
+	
+	// emitter.SetPosition(Vector3(0,0,0));
+	
+	// m_effect1 = m_soundEffect->CreateInstance();
+    // m_effect2 = m_waveBank->CreateInstance(10);
+    // m_effect2 = m_waveBank->CreateInstance(1);
+	// m_effectJetpack = m_soundJetpack->CreateInstance(SoundEffectInstance_Use3D);
+	// m_effectJetpackBoost = m_soundJetpackBoost->CreateInstance();
 
     // m_effect1->Play(true);
     // m_effect2->Play();
@@ -144,14 +155,16 @@ void Game::Update(DX::StepTimer const& timer)
 	{
 		dir -= (m_Camera01.getRight() * m_timer.GetElapsedSeconds()); //add the left vector
 		isMoving = true;
-		
-		// m_Camera01.setPosition(position);
+
+		// emitter.SetPosition(Vector3(m_Camera01.getPosition().x + 2, m_Camera01.getPosition().y, m_Camera01.getPosition().z));
+;		// m_Camera01.setPosition(position);
 	}
 	if (m_gameInputCommands.right)
 	{
 		dir += (m_Camera01.getRight() * m_timer.GetElapsedSeconds()); //add the right vector
 		isMoving = true;
 
+		// emitter.SetPosition(Vector3(m_Camera01.getPosition().x - 2, m_Camera01.getPosition().y, m_Camera01.getPosition().z));
 		// m_Camera01.setPosition(position);
 	}
 	if(m_gameInputCommands.up)
@@ -159,39 +172,49 @@ void Game::Update(DX::StepTimer const& timer)
 		dir += (m_Camera01.getRight().Cross(m_Camera01.getForward()) * m_timer.GetElapsedSeconds()); //add the up vector
 		isMoving = true;
 
+		// emitter.SetPosition(Vector3(m_Camera01.getPosition().x, m_Camera01.getPosition().y - 2, m_Camera01.getPosition().z));
 		// m_Camera01.setPosition(position);
 	}
 	if(m_gameInputCommands.down)
 	{
 		dir -= (m_Camera01.getRight().Cross(m_Camera01.getForward()) * m_timer.GetElapsedSeconds()); //add the down vector
 		isMoving = true;
-		
+
+		// emitter.SetPosition(Vector3(m_Camera01.getPosition().x, m_Camera01.getPosition().y + 2, m_Camera01.getPosition().z));
 		// m_Camera01.setPosition(position);
 	}
 	if (m_gameInputCommands.forward)
 	{
         dir += (m_Camera01.getForward() * m_timer.GetElapsedSeconds()); //add the forward vector
 		isMoving = true;
-		
+
+		// emitter.SetPosition(Vector3(m_Camera01.getPosition().x, m_Camera01.getPosition().y, m_Camera01.getPosition().z + 2));
 		// m_Camera01.setPosition(position);
 	}
 	if (m_gameInputCommands.back)
 	{
 		dir -= (m_Camera01.getForward()* m_timer.GetElapsedSeconds()); //add the back vector
 		isMoving = true;
-		
+
+		// emitter.SetPosition(Vector3(m_Camera01.getPosition().x, m_Camera01.getPosition().y, m_Camera01.getPosition().z - 2));
 		// m_Camera01.setPosition(position);
 	}
 
+	// emitter.SetPosition(Vector3(0,0,0));
+	// emitter.Update(m_Camera01.getPosition(), m_Camera01.getForward().Cross(-m_Camera01.getRight()), 1.0f);
 	if(isMoving)
 	{
 		m_effectJetpack->Play(true);
+		// m_effectJetpack->Apply3D(listener,emitter);
+
 
 		if(m_gameInputCommands.boost)
 		{
 			dir *= m_Camera01.getBoostSpeed();
 
 			m_effectJetpackBoost->Play(true);
+			// m_effectJetpackBoost->Apply3D(listener,emitter);
+
 		}
 		else
 		{
@@ -204,6 +227,9 @@ void Game::Update(DX::StepTimer const& timer)
 		m_effectJetpackBoost->Stop();
 	}
 
+	// m_effectJetpack->Apply3D(listener,emitter);
+	// m_effectJetpackBoost->Apply3D(listener,emitter);
+	
 	// Normalize movement direction to prevent faster diagonal speed
 	dir.Normalize();
 
@@ -232,32 +258,34 @@ void Game::Update(DX::StepTimer const& timer)
         m_view = m_Camera01.getCameraMatrix();
     }
 
+	listener.SetPosition(Vector3(m_Camera01.getPosition()));
+	listener.SetOrientation(m_Camera01.getForward(), m_Camera01.getForward().Cross(-m_Camera01.getRight()));
 	
 	m_world = Matrix::Identity;
 
 #ifdef DXTK_AUDIO
-    m_audioTimerAcc -= (float)timer.GetElapsedSeconds();
-    if (m_audioTimerAcc < 0)
-    {
-        if (m_retryDefault)
-        {
-            m_retryDefault = false;
-            if (m_audEngine->Reset())
-            {
-                // Restart looping audio
-                m_effect1->Play(true);
-            }
-        }
-        else
-        {
-            m_audioTimerAcc = 4.f;
-
-            m_waveBank->Play(m_audioEvent++);
-
-            if (m_audioEvent >= 11)
-                m_audioEvent = 0;
-        }
-    }
+    // m_audioTimerAcc -= (float)timer.GetElapsedSeconds();
+    // if (m_audioTimerAcc < 0)
+    // {
+    //     if (m_retryDefault)
+    //     {
+    //         m_retryDefault = false;
+    //         if (m_audEngine->Reset())
+    //         {
+    //             // Restart looping audio
+    //             m_effect1->Play(true);
+    //         }
+    //     }
+    //     else
+    //     {
+    //         m_audioTimerAcc = 4.f;
+    //
+    //         m_waveBank->Play(m_audioEvent++);
+    //
+    //         if (m_audioEvent >= 11)
+    //             m_audioEvent = 0;
+    //     }
+    // }
 #endif
 
   
@@ -433,6 +461,15 @@ void Game::Render()
 				m_world = earthScale * earthLocalRotations * m_world * earthPos * earthRotAroundYAxis * earthGlobalRotations;
 				// m_world = earthScale * m_world * earthPos;
 
+				Vector3 s;
+				Quaternion r;
+				Vector3 p;
+				m_world.Decompose(s, r, p);
+
+				m_effectRocket->Play(true);
+				emitter.Position = p;
+				m_effectRocket->Apply3D(listener, emitter);
+				
 				model = m_rocket;
 				texture = rocketTexture;
 
@@ -739,9 +776,9 @@ void Game::Render()
 			float randomRevoutionSpeed = static_cast<float>(randomRevoutionSpeedInt) + static_cast<float>(randomRevoutionSpeedFloat)/10.0f;
 
 			m_asteroids[i].revolutionSpeed = randomRevoutionSpeed;
-			
-			asteroidsInitiaized = true;
 		}
+
+		asteroidsInitiaized = true;
 	}
 
 	// Calculate and render initiaized asteroids
@@ -861,31 +898,31 @@ void Game::Render()
 	context->OMSetDepthStencilState(m_states->DepthDefault(), 0);
 
 	// SKYBOX
-	// for (int i =0; i< 2; i++)
-	// {
-	// 	m_world = SimpleMath::Matrix::Identity; //set world back to identity
-	// 	SimpleMath::Matrix skyBoxRotation;
-	// 	SimpleMath::Matrix skyBoxScale;
-	// 	if(i%2==0)
-	// 	{
-	// 		skyBoxRotation = Matrix::CreateRotationY(m_timer.GetTotalSeconds()/50);
-	// 		skyBoxScale = SimpleMath::Matrix::CreateScale(100.0f, 100.0f, 100.0f);
-	// 		texture = starsTexture.Get();
-	// 	}
-	// 	else
-	// 	{
-	// 		skyBoxRotation = Matrix::CreateRotationY(-m_timer.GetTotalSeconds()/80);
-	// 		skyBoxScale = SimpleMath::Matrix::CreateScale(99.0f, 99.0f, 99.0f);
-	// 		texture = starsTexture1.Get();
-	// 	}
-	// 	SimpleMath::Matrix skyBoxTranslation = Matrix::CreateTranslation(m_Camera01.getPosition());
-	// 	
-	// 	m_world = m_world * skyBoxRotation * skyBoxScale * skyBoxTranslation;
-	//
-	// 	m_BasicShaderPair.EnableShader(context);
-	// 	m_BasicShaderPair.SetShaderParameters(context, &m_world, &m_view, &m_projection, &m_Light, texture.Get());
-	// 	m_skyBox.Render(context);
-	// }
+	for (int i =0; i< 2; i++)
+	{
+		m_world = SimpleMath::Matrix::Identity; //set world back to identity
+		SimpleMath::Matrix skyBoxRotation;
+		SimpleMath::Matrix skyBoxScale;
+		if(i%2==0)
+		{
+			skyBoxRotation = Matrix::CreateRotationY(m_timer.GetTotalSeconds()/50);
+			skyBoxScale = SimpleMath::Matrix::CreateScale(100.0f, 100.0f, 100.0f);
+			texture = starsTexture.Get();
+		}
+		else
+		{
+			skyBoxRotation = Matrix::CreateRotationY(-m_timer.GetTotalSeconds()/80);
+			skyBoxScale = SimpleMath::Matrix::CreateScale(99.0f, 99.0f, 99.0f);
+			texture = starsTexture1.Get();
+		}
+		SimpleMath::Matrix skyBoxTranslation = Matrix::CreateTranslation(m_Camera01.getPosition());
+		
+		m_world = m_world * skyBoxRotation * skyBoxScale * skyBoxTranslation;
+	
+		m_BasicShaderPair.EnableShader(context);
+		m_BasicShaderPair.SetShaderParameters(context, &m_world, &m_view, &m_projection, &m_Light, texture.Get());
+		m_skyBox.Render(context);
+	}
 
 	// PARTICLE SYSTEM
 	

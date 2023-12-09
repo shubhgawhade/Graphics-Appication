@@ -163,15 +163,19 @@ private:
 	AsteroidClass*																m_asteroids;
 
 #ifdef DXTK_AUDIO
+	AudioEmitter emitter;
+	AudioListener listener;
+	
     std::unique_ptr<DirectX::AudioEngine>                                   m_audEngine;
     std::unique_ptr<DirectX::WaveBank>                                      m_waveBank;
     std::unique_ptr<DirectX::SoundEffect>                                   m_soundEffect;
     std::unique_ptr<DirectX::SoundEffect>                                   m_soundJetpack;
-    std::unique_ptr<DirectX::SoundEffect>                                   m_soundJetpackBoost;
+    // std::unique_ptr<DirectX::SoundEffect>                                   m_soundJetpackBoost;
     std::unique_ptr<DirectX::SoundEffectInstance>                           m_effect1;
     std::unique_ptr<DirectX::SoundEffectInstance>                           m_effect2;
     std::unique_ptr<DirectX::SoundEffectInstance>                           m_effectJetpack;
     std::unique_ptr<DirectX::SoundEffectInstance>                           m_effectJetpackBoost;
+    std::unique_ptr<DirectX::SoundEffectInstance>                           m_effectRocket;
 #endif
     
 
