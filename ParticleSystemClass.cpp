@@ -6,13 +6,6 @@
 
 ParticleSystemClass::ParticleSystemClass()
 {
-	// m_vertexBuffer = 0;
-	// m_indexBuffer = 0;
-}
-
-
-ParticleSystemClass::ParticleSystemClass(const ParticleSystemClass& other)
-{
 }
 
 
@@ -41,17 +34,6 @@ bool ParticleSystemClass::Initialize(ID3D11Device* device)
     return true;
 }
 
-void ParticleSystemClass::Shutdown()
-{
-    // Release the buffers.
-    ShutdownBuffers();
-
-    // Release the particle system.
-    ShutdownParticleSystem();
-
-    return;
-}
-
 bool ParticleSystemClass::Frame(float frameTime, ID3D11DeviceContext* deviceContext)
 {
     bool result;
@@ -76,9 +58,8 @@ bool ParticleSystemClass::Frame(float frameTime, ID3D11DeviceContext* deviceCont
     return true;
 }
 
-void ParticleSystemClass::Render(ID3D11DeviceContext* deviceContext, Camera cam)
+void ParticleSystemClass::Render(ID3D11DeviceContext* deviceContext)
 {
-	m_Camera = cam;
     // Put the vertex and index buffers on the graphics pipeline to prepare them for drawing.
     RenderBuffers(deviceContext);
 
@@ -111,7 +92,6 @@ bool ParticleSystemClass::InitializeParticleSystem()
 	m_particlesPerSecond = 250.0f;
 
     // Set the maximum number of particles allowed in the particle system.
-	// m_maxParticles = 5000;
 	m_maxParticles = 5000;
 
     // Create the particle list.
@@ -134,18 +114,6 @@ bool ParticleSystemClass::InitializeParticleSystem()
     m_accumulatedTime = 0.0f;
 
     return true;
-}
-
-void ParticleSystemClass::ShutdownParticleSystem()
-{
-    // Release the particle list.
-    if(m_particleList)
-    {
-        delete [] m_particleList;
-        m_particleList = 0;
-    }
-
-    return;
 }
 
 bool ParticleSystemClass::InitializeBuffers(ID3D11Device* device)
@@ -231,25 +199,6 @@ bool ParticleSystemClass::InitializeBuffers(ID3D11Device* device)
 	indices = 0;
 
 	return true;
-}
-
-void ParticleSystemClass::ShutdownBuffers()
-{
-	// Release the index buffer.
-	if(m_indexBuffer)
-	{
-		m_indexBuffer->Release();
-		m_indexBuffer = 0;
-	}
-
-	// Release the vertex buffer.
-	if(m_vertexBuffer)
-	{
-		m_vertexBuffer->Release();
-		m_vertexBuffer = 0;
-	}
-
-	return;
 }
 
 void ParticleSystemClass::EmitParticles(float frameTime)
@@ -348,83 +297,11 @@ void ParticleSystemClass::UpdateParticles(float frameTime)
 	// Each frame we update all the particles by making them move downwards using their position, velocity, and the frame time.
 	for(i=0; i<m_currentParticleCount; i++)
 	{
-		// if((int)frameTime%2== 0)
-		// {
-		// 	m_particleList[i].positionX = m_particleList[i].positionX - (m_particleList[i].velocity * frameTime * 0.001f);
-		// 	m_particleList[i].positionY = m_particleList[i].positionY - (m_particleList[i].velocity * frameTime * 0.001f);
-		// 	m_particleList[i].positionZ = m_particleList[i].positionZ - (m_particleList[i].velocity * frameTime * 0.001f);
-		// }
-		// else if((int)frameTime%2== 1)
-		// {
-		// 	m_particleList[i].positionX = m_particleList[i].positionX + (m_particleList[i].velocity * frameTime * 0.001f);
-		// 	m_particleList[i].positionY = m_particleList[i].positionY + (m_particleList[i].velocity * frameTime * 0.001f);
-		// 	m_particleList[i].positionZ = m_particleList[i].positionZ + (m_particleList[i].velocity * frameTime * 0.001f);
-		// }
-		// else
-		{
-			m_particleList[i].positionZ = m_particleList[i].positionZ - (m_particleList[i].velocity * frameTime * 0.001f);
-		}
-
-		// SimpleMath::Vector3 vec1 = m_Camera01.getForward();
-		// SimpleMath::Vector3 vec2 = m_particleList;
-		
-		// SortParticles(m_particleList[i]);
+		m_particleList[i].positionZ = m_particleList[i].positionZ - (m_particleList[i].velocity * frameTime * 0.001f);
 	}
 
 	return;
 }
-
-// SORT WHILE UPDATE
-// 	bool emitParticle, found;
-// 	int index, i, j;
-// void ParticleSystemClass::SortParticles(ParticleType particle)
-// {
-// 	
-// 	// Now since the particles need to be rendered from back to front for blending we have to sort the particle array.
-// 	// We will sort using Z depth so we need to find where in the list the particle should be inserted.
-// 	index = 0;
-// 	found = false;
-// 	while(!found && index < m_currentParticleCount)
-// 	{
-// 		if((m_particleList[index].active == false) || (m_particleList[index].positionZ < particle.positionZ))
-// 		{
-// 			found = true;
-// 		}
-// 		else
-// 		{
-// 			index++;
-// 		}
-// 	}
-//
-// 	// Now that we know the location to insert into we need to copy the array over by one position from the index to make room for the new particle.
-// 	i = m_currentParticleCount;
-// 	j = i - 1;
-//
-// 	while(i != index)
-// 	{
-// 		m_particleList[i].positionX = m_particleList[j].positionX;
-// 		m_particleList[i].positionY = m_particleList[j].positionY;
-// 		m_particleList[i].positionZ = m_particleList[j].positionZ;
-// 		m_particleList[i].red       = m_particleList[j].red;
-// 		m_particleList[i].green     = m_particleList[j].green;
-// 		m_particleList[i].blue      = m_particleList[j].blue;
-// 		m_particleList[i].velocity  = m_particleList[j].velocity;
-// 		m_particleList[i].active    = m_particleList[j].active;
-// 		i--;
-// 		j--;
-// 	}
-//
-// 	// Now insert it into the particle array in the correct depth order.
-// 	m_particleList[index].positionX = particle.positionX;
-// 	m_particleList[index].positionY = particle.positionY;
-// 	m_particleList[index].positionZ = particle.positionZ;
-// 	m_particleList[index].red       = particle.red;
-// 	m_particleList[index].green     = particle.green;
-// 	m_particleList[index].blue      = particle.blue;
-// 	m_particleList[index].velocity  = particle.velocity;
-// 	m_particleList[index].active    = true;
-// }
-
 
 void ParticleSystemClass::KillParticles()
 {

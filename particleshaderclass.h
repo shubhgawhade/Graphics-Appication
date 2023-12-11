@@ -33,17 +33,11 @@ public:
     ParticleShaderClass(const ParticleShaderClass&);
     ~ParticleShaderClass();
 
-    // bool Initialize(ID3D11Device*, HWND);
     bool InitializeShader(ID3D11Device*, WCHAR*, WCHAR*);
-    // void Shutdown();
-    // bool Render(ID3D11DeviceContext*, int, DirectX::SimpleMath::Matrix*, DirectX::SimpleMath::Matrix*, DirectX::SimpleMath::Matrix*, ID3D11ShaderResourceView*);
     bool Render(ID3D11DeviceContext * context, int indexCount, DirectX::SimpleMath::Matrix  *world, DirectX::SimpleMath::Matrix  *view, DirectX::SimpleMath::Matrix  *projection, ID3D11ShaderResourceView* texture1);
 
 private:
-    // void ShutdownShader();
     void OutputShaderErrorMessage(ID3D10Blob*, HWND, WCHAR*);
-
-    // bool SetShaderParameters(ID3D11DeviceContext*, DirectX::SimpleMath::Matrix*, DirectX::SimpleMath::Matrix*, DirectX::SimpleMath::Matrix*, ID3D11ShaderResourceView*);
     bool SetShaderParameters(ID3D11DeviceContext * context, DirectX::SimpleMath::Matrix  *world, DirectX::SimpleMath::Matrix  *view, DirectX::SimpleMath::Matrix  *projection, ID3D11ShaderResourceView* texture1);
     void RenderShader(ID3D11DeviceContext*, int);
 

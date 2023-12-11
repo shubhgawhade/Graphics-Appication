@@ -19,6 +19,7 @@ void Input::Initialise(HWND window)
 	m_mouse->SetMode(DirectX::Mouse::MODE_RELATIVE);
 	m_quitApp = false;
 
+	m_GameInput.pause		= false;
 	m_GameInput.forward		= false;
 	m_GameInput.back		= false;
 	m_GameInput.up			= false;
@@ -29,7 +30,7 @@ void Input::Initialise(HWND window)
 	m_GameInput.rotRight	= false;
 	m_GameInput.rotLeft		= false;
 	m_GameInput.camera1		= true;
-	m_GameInput.camera2		= false;
+	// m_GameInput.camera2		= false;
 	m_GameInput.mouseX		= 0.f;
 	m_GameInput.mouseY		= 0.f;
 }
@@ -87,8 +88,17 @@ void Input::Update()
 	}
 
 	//C key released
-	if (m_KeyboardTracker.released.C)	m_GameInput.camera2 = !m_GameInput.camera2;
-	else								m_GameInput.camera1 = !m_GameInput.camera1;
+	// if (m_KeyboardTracker.released.C)	m_GameInput.camera2 = !m_GameInput.camera2;
+	// else								m_GameInput.camera1 = !m_GameInput.camera1;
+
+	if(m_KeyboardTracker.released.P)
+	{
+		m_GameInput.pause = true;
+	}
+	else
+	{
+		m_GameInput.pause = false;
+	}
 }
 
 bool Input::Quit()

@@ -7,8 +7,6 @@
 
 ParticleShaderClass::ParticleShaderClass()
 {
-	// m_vertexShader = 0;
-	// m_pixelShader = 0;
 	m_layout = 0;
 	m_matrixBuffer = 0;
 	m_sampleState = 0;
@@ -23,31 +21,6 @@ ParticleShaderClass::ParticleShaderClass(const ParticleShaderClass& other)
 ParticleShaderClass::~ParticleShaderClass()
 {
 }
-
-
-// bool ParticleShaderClass::Initialize(ID3D11Device* device, HWND hwnd)
-// {
-// 	bool result;
-//
-//
-// 	// Initialize the vertex and pixel shaders.
-// 	result = InitializeShader(device, hwnd, L"../Engine/particle.vs", L"../Engine/particle.ps");
-// 	if(!result)
-// 	{
-// 		return false;
-// 	}
-//
-// 	return true;
-// }
-
-
-// void ParticleShaderClass::Shutdown()
-// {
-// 	// Shutdown the vertex and pixel shaders as well as the related objects.
-// 	ShutdownShader();
-//
-// 	return;
-// }
 
 
 bool ParticleShaderClass::Render(ID3D11DeviceContext* deviceContext, int indexCount, DirectX::SimpleMath::Matrix* worldMatrix, DirectX::SimpleMath::Matrix* viewMatrix, 
@@ -100,31 +73,6 @@ bool ParticleShaderClass::InitializeShader(ID3D11Device* device, WCHAR* vsFilena
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
-
-	// Create the vertex input layout description.
-	// polygonLayout[0].SemanticName = "POSITION";
-	// polygonLayout[0].SemanticIndex = 0;
-	// polygonLayout[0].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
-	// polygonLayout[0].InputSlot = 0;
-	// polygonLayout[0].AlignedByteOffset = 0;
-	// polygonLayout[0].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
-	// polygonLayout[0].InstanceDataStepRate = 0;
-	//
-	// polygonLayout[1].SemanticName = "TEXCOORD";
-	// polygonLayout[1].SemanticIndex = 0;
-	// polygonLayout[1].Format = DXGI_FORMAT_R32G32_FLOAT;
-	// polygonLayout[1].InputSlot = 0;
-	// polygonLayout[1].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;
-	// polygonLayout[1].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
-	// polygonLayout[1].InstanceDataStepRate = 0;
-	//
-	// polygonLayout[2].SemanticName = "COLOR";
-	// polygonLayout[2].SemanticIndex = 0;
-	// polygonLayout[2].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
-	// polygonLayout[2].InputSlot = 0;
-	// polygonLayout[2].AlignedByteOffset = D3D11_APPEND_ALIGNED_ELEMENT;
-	// polygonLayout[2].InputSlotClass = D3D11_INPUT_PER_VERTEX_DATA;
-	// polygonLayout[2].InstanceDataStepRate = 0;
 
 	// Get a count of the elements in the layout.
     numElements = sizeof(polygonLayout) / sizeof(polygonLayout[0]);
@@ -185,48 +133,6 @@ bool ParticleShaderClass::InitializeShader(ID3D11Device* device, WCHAR* vsFilena
 
 	return true;
 }
-
-
-// void ParticleShaderClass::ShutdownShader()
-// {
-// 	// Release the sampler state.
-// 	if(m_sampleState)
-// 	{
-// 		m_sampleState->Release();
-// 		m_sampleState = 0;
-// 	}
-//
-// 	// Release the matrix constant buffer.
-// 	if(m_matrixBuffer)
-// 	{
-// 		m_matrixBuffer->Release();
-// 		m_matrixBuffer = 0;
-// 	}
-//
-// 	// Release the layout.
-// 	if(m_layout)
-// 	{
-// 		m_layout->Release();
-// 		m_layout = 0;
-// 	}
-//
-// 	// Release the pixel shader.
-// 	if(m_pixelShader)
-// 	{
-// 		m_pixelShader->Release();
-// 		m_pixelShader = 0;
-// 	}
-//
-// 	// Release the vertex shader.
-// 	if(m_vertexShader)
-// 	{
-// 		m_vertexShader->Release();
-// 		m_vertexShader = 0;
-// 	}
-//
-// 	return;
-// }
-
 
 void ParticleShaderClass::OutputShaderErrorMessage(ID3D10Blob* errorMessage, HWND hwnd, WCHAR* shaderFilename)
 {

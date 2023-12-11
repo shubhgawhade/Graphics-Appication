@@ -30,7 +30,6 @@ float4 main(InputType input) : SV_TARGET
     float3	lightDir;
     float	lightIntensity;
     float4	color;
-	float4 diffuse;
 	// float4	normal = float4(0,0,0,1);
 
 	// Invert the light direction for calculations.
@@ -38,19 +37,6 @@ float4 main(InputType input) : SV_TARGET
 
 	// Calculate the amount of light on this pixel.
 	lightIntensity = saturate(dot(input.normal, -lightDir));
-
-	// Determine the final amount of diffuse color based on the diffuse color combined with the light intensity.
-	// P	is the point in 3D space that we want to shade,
-	// N	is the surface normal at point we want to shade,
-	// Lp	is the position of the light in 3D space,
-	// Ld	is the diffuse contribution of the light source,
-	// L	is the normalized direction vector from the point we want to shade to the light source,
-	// kd	is the diffuse component of the material,
-	
-	// Then L == normalize(Lp−P)
-	// diffuse max(0,L⋅N)Ld.kd
-
-	diffuse = float4(max(0, lightDir * input.normal)*diffuseColor,0);
 
 	// NORMAL MAP
 	// if(input.hasNormal)
@@ -80,8 +66,6 @@ float4 main(InputType input) : SV_TARGET
 	// 	return color;
 	// }
 	
-	
-	// color = ambientColor + (diffuse * lightIntensity); //adding ambient
 	color = ambientColor + (diffuseColor * lightIntensity); //adding ambient
 	color = saturate(color);
 

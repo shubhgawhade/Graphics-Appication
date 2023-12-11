@@ -6,6 +6,7 @@
 
 struct InputCommands
 {
+	bool pause;
 	bool forward;
 	bool back;
 	bool up;
@@ -16,7 +17,7 @@ struct InputCommands
 	bool rotRight;
 	bool rotLeft;
 	bool camera1;
-	bool camera2;
+	// bool camera2;
 	float mouseX;
 	float mouseY;
 };
@@ -35,6 +36,7 @@ public:
 
 
 private:
+	HWND window;
 	bool m_quitApp;
 	std::unique_ptr<DirectX::Keyboard>	m_keyboard;
 	std::unique_ptr<DirectX::Mouse>		m_mouse;

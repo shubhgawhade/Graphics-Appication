@@ -32,6 +32,53 @@ struct PixelInputType
 	float4 color : COLOR;
 };
 
+// matrix rotateX(float theta) {
+// 	float c = cos(theta);
+// 	float s = sin(theta);
+// 	return matrix(
+// 		float4(1, 0, 0, 0),
+// 		float4(0, c, -s, 0),
+// 		float4(0, s, c, 0),
+// 		float4 (0, 0, 0, 1)
+// 	);
+// }
+//
+// matrix rotateY(float theta) {
+// 	float c = cos(theta);
+// 	float s = sin(theta);
+// 	return matrix(
+// 		float4(c, 0, s, 0),
+// 		float4(0, 1, 0, 0),
+// 		float4(-s, 0, c, 0),
+// 		float4 (0, 0, 0, 1)
+// 	);
+// }
+//
+// matrix rotateZ(float theta) {
+// 	float c = cos(theta);
+// 	float s = sin(theta);
+// 	return matrix(
+// 		float4(c, -s, 0, 0),
+// 		float4(s, c, 0, 0),
+// 		float4(0, 0, 1, 0),
+// 		float4 (0, 0, 0, 1)
+// 	);
+// }
+//
+// matrix Rotation(float3 radians)
+// {
+// 	matrix mymat[3];
+// 	matrix mymatSum;
+//
+// 	mymat[0] = rotateX(radians.x);
+// 	mymat[1] = rotateY(radians.y);
+// 	mymat[2] = rotateZ(radians.z);
+//
+// 	mymatSum = mymat[2] * mymat[1] * mymat[0];
+// 	
+// 	return mymatSum;
+// }
+
 ////////////////////////////////////////////////////////////////////////////////
 // Vertex Shader
 ////////////////////////////////////////////////////////////////////////////////

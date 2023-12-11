@@ -82,30 +82,22 @@ void Game::Initialize(HWND window, int width, int height)
     m_retryDefault = false;
 
     // m_waveBank = std::make_unique<WaveBank>(m_audEngine.get(), L"Resources/Audio/adpcmdroid.xwb");
+	// m_soundEffect = std::make_unique<SoundEffect>(m_audEngine.get(), L"Resources/Audio/MusicMono_adpcm.wav");
 	m_waveBank = std::make_unique<WaveBank>(m_audEngine.get(), L"Resources/Audio/ProjectAudio.xwb");
-
-    m_soundEffect = std::make_unique<SoundEffect>(m_audEngine.get(), L"Resources/Audio/MusicMono_adpcm.wav");
-
-	m_soundJetpack = std::make_unique<SoundEffect>(m_audEngine.get(), L"Resources/Audio/jetpack.wav");
-	// m_soundJetpackBoost = std::make_unique<SoundEffect>(m_audEngine.get(), L"Resources/Audio/JetpackBoost.wav");
 
 	m_effectJetpack = m_waveBank->CreateInstance(0u, SoundEffectInstance_Use3D);
 	m_effectJetpackBoost = m_waveBank->CreateInstance(1,SoundEffectInstance_Use3D);
 	m_effectRocket = m_waveBank->CreateInstance(2,SoundEffectInstance_Use3D);
+	m_effectChillBG = m_waveBank->CreateInstance(3);
 
-	m_effect1 = m_soundEffect->CreateInstance(SoundEffectInstance_Use3D);
+	m_effectChillBG->Play(true);
+	
+	// m_effect1 = m_soundEffect->CreateInstance();
 	// m_effect1->Play(true);
 	
 	// emitter.SetPosition(Vector3(0,0,0));
-	
-	// m_effect1 = m_soundEffect->CreateInstance();
-    // m_effect2 = m_waveBank->CreateInstance(10);
-    // m_effect2 = m_waveBank->CreateInstance(1);
-	// m_effectJetpack = m_soundJetpack->CreateInstance(SoundEffectInstance_Use3D);
-	// m_effectJetpackBoost = m_soundJetpackBoost->CreateInstance();
 
     // m_effect1->Play(true);
-    // m_effect2->Play();
 #endif
 }
 
@@ -118,6 +110,17 @@ void Game::Tick()
 	// 	Height = m_deviceResources->GetScreenViewport().Height;
 	// 	Width = m_deviceResources->GetScreenViewport().Width;
 	// }
+
+	if(m_gameInputCommands.pause)
+	{
+		int response = MessageBox(NULL, L"CONTROLS: \n\nW - Forward \nA - Left\nS - Backwards\nD - Right\nQ - Down\nE - Up\nL Shift - Boost\n\nP - Pause\nEsc - Quit\n\nHit ENTER to Un-Pause", L"INFO!", MB_OK | MB_ICONWARNING);
+		if(response)
+		{
+			m_gameInputCommands.pause = false;
+		}
+		
+		return;
+	}
 	
 	//take in input
 	m_input.Update();								//update the hardware
@@ -147,7 +150,7 @@ void Game::Tick()
 
 // Updates the world.
 void Game::Update(DX::StepTimer const& timer)
-{
+{	
 	Vector3 dir;
 	bool isMoving = false;
 
@@ -204,6 +207,7 @@ void Game::Update(DX::StepTimer const& timer)
 	// emitter.Update(m_Camera01.getPosition(), m_Camera01.getForward().Cross(-m_Camera01.getRight()), 1.0f);
 	if(isMoving)
 	{
+		m_effectJetpack->SetVolume(0.5f);
 		m_effectJetpack->Play(true);
 		// m_effectJetpack->Apply3D(listener,emitter);
 
@@ -212,6 +216,7 @@ void Game::Update(DX::StepTimer const& timer)
 		{
 			dir *= m_Camera01.getBoostSpeed();
 
+			m_effectJetpackBoost->SetVolume(0.5f);
 			m_effectJetpackBoost->Play(true);
 			// m_effectJetpackBoost->Apply3D(listener,emitter);
 
@@ -245,18 +250,21 @@ void Game::Update(DX::StepTimer const& timer)
 
 	m_Camera01.setSmoothRotation(rotation);
     
-    if (m_gameInputCommands.camera2)
-    {
-        m_Camera02.Update();	//camera update.
+    // if (m_gameInputCommands.camera2)
+    // {
+    //     m_Camera02.Update();	//camera update.
+    //
+    //     m_view = m_Camera02.getCameraMatrix();
+    // }
+    // else
+    // {
+    //     m_Camera01.Update();	//camera update.
+    //
+    //     m_view = m_Camera01.getCameraMatrix();
+    // }
 
-        m_view = m_Camera02.getCameraMatrix();
-    }
-    else
-    {
-        m_Camera01.Update();	//camera update.
-
-        m_view = m_Camera01.getCameraMatrix();
-    }
+	m_Camera01.Update();	//camera update.
+	m_view = m_Camera01.getCameraMatrix();
 
 	listener.SetPosition(Vector3(m_Camera01.getPosition()));
 	listener.SetOrientation(m_Camera01.getForward(), m_Camera01.getForward().Cross(-m_Camera01.getRight()));
@@ -310,13 +318,6 @@ void Game::Render()
 
     m_deviceResources->PIXBeginEvent(L"Render");
     auto context = m_deviceResources->GetD3DDeviceContext();
-
-    // Draw Text to the screen
-    m_deviceResources->PIXBeginEvent(L"Draw sprite");
-    m_sprites->Begin();
-		m_font->DrawString(m_sprites.get(), L"DirectXTK Demo Window", XMFLOAT2(10, 10), Colors::Yellow);
-    m_sprites->End();
-    m_deviceResources->PIXEndEvent();
 	
 	//Set Rendering states. 
 	context->OMSetBlendState(m_states->AlphaBlend(), nullptr, 0xFFFFFFFF);
@@ -341,7 +342,7 @@ void Game::Render()
 			SimpleMath::Matrix sunRot = SimpleMath::Matrix::CreateRotationY(m_timer.GetTotalSeconds() * 0.15f);
 			SimpleMath::Matrix sunScale = SimpleMath::Matrix::CreateScale(6);
 			m_world = sunRot * m_world * sunScale;
-			model= m_sun;
+			model= m_planet;
 			texture = sunTexture;
 		}
 		// MERCURY
@@ -362,7 +363,7 @@ void Game::Render()
 			SimpleMath::Matrix mercuryScale = SimpleMath::Matrix::CreateScale(0.4f);
 			// m_world = mercuryScale * mercuryRotLocalYAxis * localRotations * m_world * mercuryPos * mercuryRotY;
 			m_world = mercuryScale * mercuryRotLocalYAxis * localRotations * m_world * mercuryPos * mercuryRotAroundYAxis * globalRotations;
-			model = m_sun;
+			model = m_planet;
 			texture = mercuryTexture;
 		}
 		// VENUS
@@ -383,7 +384,7 @@ void Game::Render()
 			SimpleMath::Matrix globalRotations = venusRotZ * venusRotX * venusRotY;
 			SimpleMath::Matrix venusScale = SimpleMath::Matrix::CreateScale(1.24f);
 			m_world = venusScale * venusRotLocalYAxis * localRotations * m_world * venusPos * venusRotAroundYAxis * globalRotations;
-			model = m_sun;
+			model = m_planet;
 			texture = venusTexture;
 		}
 		// EARTH
@@ -412,7 +413,7 @@ void Game::Render()
 			if(submodel == 2)
 			{
 				m_world = earthScale * earthRotLocalYAxis * earthLocalRotations * m_world * earthPos * earthRotAroundYAxis * earthGlobalRotations;
-				model = m_sun;
+				model = m_planet;
 				texture = earthTexture;
 
 				submodel--;
@@ -426,7 +427,7 @@ void Game::Render()
 				SimpleMath::Matrix moonRotLocalZ = SimpleMath::Matrix::CreateRotationZ(XMConvertToRadians(0.0f));
 				SimpleMath::Matrix moonRotLocalYAxis = SimpleMath::Matrix::CreateRotationY(m_timer.GetTotalSeconds() * 6.0f);
 				SimpleMath::Matrix moonLocalRotations = moonRotLocalZ * moonRotLocalX * moonRotLocalY;
-				SimpleMath::Matrix moonPos = SimpleMath::Matrix::CreateTranslation(-2.1f, 0.0f, 0.0f);
+				SimpleMath::Matrix moonPos = SimpleMath::Matrix::CreateTranslation(-1.8f, 0.0f, 0.0f);
 				SimpleMath::Matrix moonRotX = SimpleMath::Matrix::CreateRotationX(XMConvertToRadians(5.14f));
 				SimpleMath::Matrix moonRotY = SimpleMath::Matrix::CreateRotationY(XMConvertToRadians(0.0f));
 				SimpleMath::Matrix moonRotZ = SimpleMath::Matrix::CreateRotationZ(XMConvertToRadians(0.0f));
@@ -437,7 +438,7 @@ void Game::Render()
 				m_world = moonScale * moonRotLocalYAxis * moonLocalRotations * m_world * moonPos * moonRotAroundYAxis *
 					earthPos * earthRotAroundYAxis * earthGlobalRotations;
 				
-				model = m_sun;
+				model = m_planet;
 				texture = moonTexture;
 
 				submodel--;
@@ -446,20 +447,19 @@ void Game::Render()
 			{
 				//prepare transform for object.
 				m_world = SimpleMath::Matrix::Identity; //set world back to identity
-				SimpleMath::Matrix earthRotLocalX = SimpleMath::Matrix::CreateRotationX(XMConvertToRadians(-90.0f));
-				SimpleMath::Matrix earthRotLocalY = SimpleMath::Matrix::CreateRotationY(XMConvertToRadians(0.0f));
-				SimpleMath::Matrix earthRotLocalZ = SimpleMath::Matrix::CreateRotationZ(XMConvertToRadians(0.0f));
-				SimpleMath::Matrix earthLocalRotations = earthRotLocalZ * earthRotLocalX * earthRotLocalY;
-				SimpleMath::Matrix earthPos = SimpleMath::Matrix::CreateTranslation(19.0f, 0.0f, 0.0f);
-				SimpleMath::Matrix earthRotX = SimpleMath::Matrix::CreateRotationX(XMConvertToRadians(0.0f));
-				SimpleMath::Matrix earthRotY = SimpleMath::Matrix::CreateRotationY(XMConvertToRadians(0.0f));
-				SimpleMath::Matrix earthRotZ = SimpleMath::Matrix::CreateRotationZ(XMConvertToRadians(25.0f));
-				SimpleMath::Matrix earthRotAroundYAxis = SimpleMath::Matrix::CreateRotationY(m_timer.GetTotalSeconds() * 0.45f);
-				SimpleMath::Matrix earthGlobalRotations = earthRotZ * earthRotX * earthRotY;
-				SimpleMath::Matrix earthScale = SimpleMath::Matrix::CreateScale(0.7f);
+				SimpleMath::Matrix rocketRotLocalX = SimpleMath::Matrix::CreateRotationX(XMConvertToRadians(-90.0f));
+				SimpleMath::Matrix rocketRotLocalY = SimpleMath::Matrix::CreateRotationY(XMConvertToRadians(0.0f));
+				SimpleMath::Matrix rocketRotLocalZ = SimpleMath::Matrix::CreateRotationZ(XMConvertToRadians(0.0f));
+				SimpleMath::Matrix rocketLocalRotations = rocketRotLocalZ * rocketRotLocalX * rocketRotLocalY;
+				SimpleMath::Matrix rocketPos = SimpleMath::Matrix::CreateTranslation(19.0f, 0.0f, 0.0f);
+				SimpleMath::Matrix rocketRotX = SimpleMath::Matrix::CreateRotationX(XMConvertToRadians(0.0f));
+				SimpleMath::Matrix rocketRotY = SimpleMath::Matrix::CreateRotationY(XMConvertToRadians(0.0f));
+				SimpleMath::Matrix rocketRotZ = SimpleMath::Matrix::CreateRotationZ(XMConvertToRadians(25.0f));
+				SimpleMath::Matrix rocketRotAroundYAxis = SimpleMath::Matrix::CreateRotationY(m_timer.GetTotalSeconds() * 0.45f);
+				SimpleMath::Matrix rocketGlobalRotations = rocketRotZ * rocketRotX * rocketRotY;
+				SimpleMath::Matrix rocketScale = SimpleMath::Matrix::CreateScale(0.7f);
 				
-				m_world = earthScale * earthLocalRotations * m_world * earthPos * earthRotAroundYAxis * earthGlobalRotations;
-				// m_world = earthScale * m_world * earthPos;
+				m_world = rocketScale * rocketLocalRotations * m_world * rocketPos * rocketRotAroundYAxis * rocketGlobalRotations;
 
 				Vector3 s;
 				Quaternion r;
@@ -473,18 +473,13 @@ void Game::Render()
 				model = m_rocket;
 				texture = rocketTexture;
 
-				// m_world = SimpleMath::Matrix::Identity; //set world back to identity
-				// SimpleMath::Matrix newPosition3 = SimpleMath::Matrix::CreateTranslation(0.0f, 0.0f, 15.0f);
-				// // SimpleMath::Matrix lookAt = Matrix::CreateLookAt(Vector3(0,0,2), m_Camera01.getForward(), m_Camera01.getForward().Cross(m_Camera01.getRight()));
-				// SimpleMath::Matrix particleRotation = Matrix::CreateRotationY(m_timer.GetTotalSeconds() * 1);
-
 				context->OMSetBlendState(m_states->Additive(), nullptr, 0xFFFFFFFF);
 				
 				SimpleMath::Matrix rocketParticlesRotX = SimpleMath::Matrix::CreateRotationX(XMConvertToRadians(-90.0f));
 				
 				DirectX::SimpleMath::Matrix m_world1;
-				m_world1 = rocketParticlesRotX * earthLocalRotations * m_world1 * earthPos * earthRotAroundYAxis * earthGlobalRotations;
-				m_ParticleSystem.Render(context, m_Camera01);
+				m_world1 = rocketParticlesRotX * rocketLocalRotations * m_world1 * rocketPos * rocketRotAroundYAxis * rocketGlobalRotations;
+				m_ParticleSystem.Render(context);
 				m_ParticleSystem.Frame(5, m_deviceResources->GetD3DDeviceContext());
 				m_ParticleShader.Render(context, m_ParticleSystem.GetIndexCount(), &m_world1, &m_view, &m_projection, 
 								  fxtexture.Get());
@@ -493,23 +488,6 @@ void Game::Render()
 
 				submodel--;
 			}
-			// else if(submodel == 1)
-			// {
-			// 	// //prepare transform for object.
-			// 	// m_world = SimpleMath::Matrix::Identity; //set world back to identity
-			// 	// SimpleMath::Matrix rocketPos = SimpleMath::Matrix::CreateTranslation(0.0f, 0.0f, 15.0f);
-			// 	//
-			// 	// m_world = m_world * rocketPos;
-			// 	//
-			// 	// model = m_asteroid1;
-			// 	// texture = asteroidTexture;
-			//
-			// 	submodel--;
-			// }
-			// else if(submodel == 0)
-			// {
-			// 	submodel--;
-			// }
 		}
 		// MARS
 		else if(i==4)
@@ -530,7 +508,7 @@ void Game::Render()
 			SimpleMath::Matrix marsScale = SimpleMath::Matrix::CreateScale(0.52f);
 
 			m_world = marsScale * marsRotLocalYAxis * localRotations * m_world * marsPos * marsRotAroundYAxis * globalRotations;
-			model = m_sun;
+			model = m_planet;
 			texture = marsTexture;
 		}
 		// JUPITER
@@ -551,7 +529,7 @@ void Game::Render()
 			SimpleMath::Matrix globalRotations = jupiterRotZ * jupiterRotX * jupiterRotY;
 			SimpleMath::Matrix jupiterScale = SimpleMath::Matrix::CreateScale(2.73f);
 			m_world = jupiterScale * jupiterRotLocalYAxis * localRotations * m_world * jupiterPos * jupiterRotAroundYAxis * globalRotations;
-			model = m_sun;
+			model = m_planet;
 			texture = jupiterTexture;
 		}
 		// SATURN
@@ -580,7 +558,7 @@ void Game::Render()
 			if(submodel == 1)
 			{
 				m_world = saturnScale * saturnRotLocalYAxis * localRotations * m_world * saturnPos * saturnRotAroundYAxis * globalRotations;
-				model = m_sun;
+				model = m_planet;
 				texture = saturnTexture;
 				
 				submodel--;
@@ -620,7 +598,7 @@ void Game::Render()
 			SimpleMath::Matrix globalRotations = uranusRotZ * uranusRotX * uranusRotY;
 			SimpleMath::Matrix uranusScale = SimpleMath::Matrix::CreateScale(0.87f);
 			m_world = uranusScale * uranusRotLocalYAxis * localRotations * m_world * uranusPos * uranusRotAroundYAxis * globalRotations;
-			model = m_sun;
+			model = m_planet;
 			texture = uranusTexture;
 		}
 		// NEPTUNE
@@ -641,7 +619,7 @@ void Game::Render()
 			SimpleMath::Matrix globalRotations = neptuneRotZ * neptuneRotX * neptuneRotY;
 			SimpleMath::Matrix neptuneScale = SimpleMath::Matrix::CreateScale(1.19f);
 			m_world = neptuneScale * neptuneRotLocalYAxis * localRotations * m_world * neptunePos * neptuneRotAroundYAxis * globalRotations;
-			model = m_sun;
+			model = m_planet;
 			texture = neptuneTexture;
 		}
 
@@ -649,9 +627,6 @@ void Game::Render()
 		{
 			i--;
 		}
-		
-		SimpleMath::Matrix globalScale = SimpleMath::Matrix::CreateScale(1.0f);
-		// m_world = m_world * globalScale;
 
 		// Turn our shaders on, set parameters
 		m_BasicShaderPair.EnableShader(context);
@@ -660,11 +635,8 @@ void Game::Render()
 		//render our sun model
 		model.Render(context);		
 	}
-
-	// TODO: ASTEROID BELT, RANDOM SPACESHIP WITH PARTICLE SYSTEM, RANDOM SPACESUIT WITH PARTICLE SYSTEM, SUN WITH PARTICLE SYSTEM 
 	
 	// ASTEROID BELT
-
 	if(!asteroidsInitiaized)
 	{
 		numberOfAsteroids = 500;
@@ -714,6 +686,18 @@ void Game::Render()
 				m_asteroids[i].model = m_asteroid6;
 				
 				break;
+
+			// case 6:
+			//
+			// 	m_asteroids[i].model = m_asteroid7;
+			// 	
+			// 	break;
+			//
+			// case 7:
+			//
+			// 	m_asteroids[i].model = m_asteroid8;
+			// 	
+			// 	break;
 			}
 			
 			// Random Scale
@@ -734,7 +718,6 @@ void Game::Render()
 				int randomRotInt = rand() % 360;
 				int randomRotFloat = rand() % 10;
 				float randomRot = static_cast<float>(randomRotInt) + static_cast<float>(randomRotFloat)/10.0f;
-				// float randomRot = static_cast<float>(randomRotFloat);
 
 				if(j == 0)
 				{
@@ -819,10 +802,8 @@ void Game::Render()
 		// Revolution
 		SimpleMath::Matrix asteroidRevolution = SimpleMath::Matrix::CreateRotationY(m_timer.GetTotalSeconds()/25 * m_asteroids[i].revolutionSpeed);
 	
-	
 		m_world = asteroidScale * asteroidLocalRotation * asteroidLocalRotations * asteroidPos * m_world * asteroidRevolution;
-
-
+		
 		texture = asteroidTexture;
 
 		// Turn our shaders on, set parameters
@@ -833,67 +814,8 @@ void Game::Render()
 		model = m_asteroids[i].model;
 		model.Render(context);	
 	}
-		
-	
-	// // //prepare transform for object.
-	// m_world = SimpleMath::Matrix::Identity; //set world back to identity
-	// // SimpleMath::Matrix mercuryPos = SimpleMath::Matrix::CreateTranslation(0.0f, 0.0f, 0.0f);
-	// SimpleMath::Matrix mercuryRot = SimpleMath::Matrix::CreateRotationY(m_timer.GetTotalSeconds());
-	// m_world = m_world * mercuryRot;
-	//
-	// // Turn our shaders on, set parameters
-	// m_BasicShaderPair.EnableShader(context);
-	// m_BasicShaderPair.SetShaderParameters(context, &m_world, &m_view, &m_projection, &m_Light, mercuryTexture.Get());
-	//
-	// //render our astronaut model
-	// m_mercuryPlanet.Render(context);
-	
-	
-	// //prepare transform for object.
-	// m_world = SimpleMath::Matrix::Identity; //set world back to identity
-	// SimpleMath::Matrix astroPos = SimpleMath::Matrix::CreateTranslation(0.0f, 0.0f, 0.0f);
-	// m_world = m_world * astroPos;
-	//
-	// // Turn our shaders on, set parameters
-	// m_BasicShaderPair.EnableShader(context);
-	// m_BasicShaderPair.SetShaderParameters(context, &m_world, &m_view, &m_projection, &m_Light, m_texture1.Get());
-	//
-	// //render our astronaut model
-	// m_astronaut.Render(context);
-	
-	
-	// m_world = SimpleMath::Matrix::Identity; //set world back to identity
-	//
-	// // Turn our shaders on, set parameters
-	// m_BasicShaderPair.EnableShader(context);
-	// m_BasicShaderPair.SetShaderParameters(context, &m_world, &m_view, &m_projection, &m_Light, m_texture1.Get());//, grassNormal.Get());
-	//
-	// //render our model
-	// m_BasicModel.Render(context);
-	//
-	// //prepare transform for second object.
-	// m_world = SimpleMath::Matrix::Identity; //set world back to identity
-	// SimpleMath::Matrix newPosition = SimpleMath::Matrix::CreateTranslation(2.0f, 0.0f, 0.0f);
-	// m_world = m_world * newPosition;
-	//
-	// //setup and draw sphere
-	// m_BasicShaderPair.EnableShader(context);
-	// m_BasicShaderPair.SetShaderParameters(context, &m_world, &m_view, &m_projection, &m_Light, m_texture2.Get());
-	// m_BasicModel2.Render(context);
-	//
-	// //prepare transform for floor object. 
-	// m_world = SimpleMath::Matrix::Identity; //set world back to identity
-	// SimpleMath::Matrix newPosition2 = SimpleMath::Matrix::CreateTranslation(0.0f, -0.6f, 0.0f);
-	// m_world = m_world * newPosition2;
-	//
-	// //setup and draw cube
-	// m_BasicShaderPair.EnableShader(context);
-	// m_BasicShaderPair.SetShaderParameters(context, &m_world, &m_view, &m_projection, &m_Light, grassAlbedo.Get());//, grassNormal.Get());
-	// m_BasicModel3.Render(context);
-
 	
 	// ADDITIVE STATE FOR BACKGROUND AND EFFECTS
-	
 	context->OMSetBlendState(m_states->Additive(), nullptr, 0xFFFFFFFF);
 	context->OMSetDepthStencilState(m_states->DepthDefault(), 0);
 
@@ -905,13 +827,15 @@ void Game::Render()
 		SimpleMath::Matrix skyBoxScale;
 		if(i%2==0)
 		{
-			skyBoxRotation = Matrix::CreateRotationY(m_timer.GetTotalSeconds()/50);
+			skyBoxRotation = Matrix::CreateRotationZ(XMConvertToRadians(-50));
+			skyBoxRotation *= Matrix::CreateRotationY(m_timer.GetTotalSeconds()/50);
 			skyBoxScale = SimpleMath::Matrix::CreateScale(100.0f, 100.0f, 100.0f);
 			texture = starsTexture.Get();
 		}
 		else
 		{
-			skyBoxRotation = Matrix::CreateRotationY(-m_timer.GetTotalSeconds()/80);
+			skyBoxRotation = Matrix::CreateRotationZ(XMConvertToRadians(-80));
+			skyBoxRotation *= Matrix::CreateRotationY(-m_timer.GetTotalSeconds()/80);
 			skyBoxScale = SimpleMath::Matrix::CreateScale(99.0f, 99.0f, 99.0f);
 			texture = starsTexture1.Get();
 		}
@@ -925,18 +849,24 @@ void Game::Render()
 	}
 
 	// PARTICLE SYSTEM
-	
 	// m_world = SimpleMath::Matrix::Identity; //set world back to identity
-	// SimpleMath::Matrix newPosition3 = SimpleMath::Matrix::CreateTranslation(0.0f, 0.0f, 15.0f);
+	// SimpleMath::Matrix newPosition3 = SimpleMath::Matrix::CreateTranslation(0.0f, 0.0f, 0.0f);
 	// // SimpleMath::Matrix lookAt = Matrix::CreateLookAt(Vector3(0,0,2), m_Camera01.getForward(), m_Camera01.getForward().Cross(m_Camera01.getRight()));
 	// SimpleMath::Matrix particleRotation = Matrix::CreateRotationY(m_timer.GetTotalSeconds() * 1);
 	// m_world = particleRotation * m_world * newPosition3;
-	// m_ParticleSystem.Render(context, m_Camera01);
+	// m_ParticleSystem.Render(context);
 	// m_ParticleSystem.Frame(5, m_deviceResources->GetD3DDeviceContext());
 	// m_ParticleShader.Render(context, m_ParticleSystem.GetIndexCount(), &m_world, &m_view, &m_projection, 
 	// 				  fxtexture.Get());
 	
 
+	// Draw Text to the screen
+	m_deviceResources->PIXBeginEvent(L"Draw sprite");
+	m_sprites->Begin();
+	m_font->DrawString(m_sprites.get(), L"DirectXTK Space Exploration", XMFLOAT2(10, 10), Colors::Yellow);
+	m_sprites->End();
+	m_deviceResources->PIXEndEvent();
+	
     // Show the new frame.
     m_deviceResources->Present();
 }
@@ -1041,15 +971,15 @@ void Game::CreateDeviceDependentResources()
 	m_batch = std::make_unique<PrimitiveBatch<VertexPositionColor>>(context);
 
 	//setup our test model
-	m_BasicModel.InitializeSphere(device);
-
-	m_BasicModel2.InitializeModel(device,"Resources/Models/drone.obj");
-	m_BasicModel3.InitializeBox(device, 10.0f, 0.1f, 10.0f);	//box includes dimensions
+	// m_BasicModel.InitializeSphere(device);
+	//
+	// m_BasicModel2.InitializeModel(device,"Resources/Models/drone.obj");
+	// m_BasicModel3.InitializeBox(device, 10.0f, 0.1f, 10.0f);	//box includes dimensions
 
 	m_skyBox.InitializeModel(device, "Resources/Models/skybox.obj");
 	m_astronaut.InitializeModel(device, "Resources/Models/astronaut.obj");
 
-	m_sun.InitializeModel(device,"Resources/Models/sun.obj");
+	m_planet.InitializeModel(device,"Resources/Models/sun.obj");
 	m_saturnRing.InitializeModel(device,"Resources/Models/saturnRing.obj");
 	m_rocket.InitializeModel(device,"Resources/Models/rocket1.obj");
 	m_asteroid1.InitializeModel(device,"Resources/Models/asteroid1.obj");
@@ -1058,7 +988,8 @@ void Game::CreateDeviceDependentResources()
 	m_asteroid4.InitializeModel(device,"Resources/Models/asteroid4.obj");
 	m_asteroid5.InitializeModel(device,"Resources/Models/asteroid5.obj");
 	m_asteroid6.InitializeModel(device,"Resources/Models/asteroid6.obj");
-	// m_mercuryPlanet.InitializeModel(device,"Resources/Models/mercury.obj");
+	// m_asteroid7.InitializeModel(device,"Resources/Models/asteroid7.obj");
+	// m_asteroid8.InitializeModel(device,"Resources/Models/asteroid8.obj");
 
 	//load and set up our Vertex and Pixel Shaders
 	m_BasicShaderPair.InitStandard(device, L"light_vs.cso", L"light_ps.cso");
@@ -1073,8 +1004,8 @@ void Game::CreateDeviceDependentResources()
 	m_fxFactory->CreateTexture(L"Resources/Textures/Grass Albedo.png",context, grassAlbedo.ReleaseAndGetAddressOf());
 	m_fxFactory->CreateTexture(L"Resources/Textures/Grass Normal.png",context, grassNormal.ReleaseAndGetAddressOf());
 	m_fxFactory->CreateTexture(L"Resources/Textures/EvilDrone_Diff.png",context, m_texture2.ReleaseAndGetAddressOf());
-	m_fxFactory->CreateTexture(L"Resources/Textures/starsTexture.png",context, starsTexture.ReleaseAndGetAddressOf());
-	m_fxFactory->CreateTexture(L"Resources/Textures/starsTexture1.png",context, starsTexture1.ReleaseAndGetAddressOf());
+	m_fxFactory->CreateTexture(L"Resources/Textures/starsTexture4.png",context, starsTexture.ReleaseAndGetAddressOf());
+	m_fxFactory->CreateTexture(L"Resources/Textures/starsTextureClose.png",context, starsTexture1.ReleaseAndGetAddressOf());
 	m_fxFactory->CreateTexture(L"Resources/Textures/particles.png",context, fxtexture.ReleaseAndGetAddressOf());
 	m_fxFactory->CreateTexture(L"Resources/Textures/sun.jpg",context, sunTexture.ReleaseAndGetAddressOf());
 	m_fxFactory->CreateTexture(L"Resources/Textures/mercury.jpg",context, mercuryTexture.ReleaseAndGetAddressOf());

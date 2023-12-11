@@ -42,27 +42,22 @@ private:
 
 public:
     ParticleSystemClass();
-    ParticleSystemClass(const ParticleSystemClass&);
     ~ParticleSystemClass();
 
     bool Initialize(ID3D11Device*);
-    void Shutdown();
     bool Frame(float, ID3D11DeviceContext*);
-    void Render(ID3D11DeviceContext*, Camera);
+    void Render(ID3D11DeviceContext*);
 
     int GetIndexCount();
-    SimpleMath::Matrix LookAt();
+    // SimpleMath::Matrix LookAt();
 
 private:
     bool InitializeParticleSystem();
-    void ShutdownParticleSystem();
 
     bool InitializeBuffers(ID3D11Device*);
-    void ShutdownBuffers();
 
     void EmitParticles(float);
     void UpdateParticles(float);
-    void SortParticles(ParticleType);
     void KillParticles();
 
     bool UpdateBuffers(ID3D11DeviceContext*);
@@ -82,7 +77,6 @@ private:
     ParticleType* m_particleList;
     bool willUpdate;
     float temp_y;
-    // ParticleType* m_particleList;
     int m_vertexCount, m_indexCount;
     VertexType* m_vertices;
     ID3D11Buffer *m_vertexBuffer, *m_indexBuffer;

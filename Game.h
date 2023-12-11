@@ -95,7 +95,7 @@ private:
 
 	//Cameras
     Camera																	m_Camera01;
-    Camera																	m_Camera02;
+    // Camera																	m_Camera02;
 
 	//textures 
 	Microsoft::WRL::ComPtr<ID3D11ShaderResourceView>                        m_texture1;
@@ -127,12 +127,12 @@ private:
 	//Shaders
 	Shader																	m_BasicShaderPair;
 	Shader																	m_BasicShaderPair1;
-	ModelClass																m_BasicModel;
-	ModelClass																m_BasicModel2;
-	ModelClass																m_BasicModel3;
+	// ModelClass																m_BasicModel;
+	// ModelClass																m_BasicModel2;
+	// ModelClass																m_BasicModel3;
 	ModelClass																m_skyBox;
 	ModelClass																m_astronaut;
-	ModelClass																m_sun;
+	ModelClass																m_planet;
 	ModelClass																m_saturnRing;
 	ModelClass																m_rocket;
 	ModelClass																m_asteroid1;
@@ -141,9 +141,9 @@ private:
 	ModelClass																m_asteroid4;
 	ModelClass																m_asteroid5;
 	ModelClass																m_asteroid6;
+	// ModelClass																m_asteroid7;
+	// ModelClass																m_asteroid8;
 	// ModelClass																m_mercuryPlanet;
-	// ModelClass																m_venusPlanet;
-	// ModelClass																m_earthPlanet;
 
 	bool asteroidsInitiaized = false;
     class AsteroidClass
@@ -157,8 +157,6 @@ private:
     	float revolutionSpeed;
     };
 
-	// int numberOfAsteroids = 3;
-	// AsteroidClass																m_asteroids[3];
 	int numberOfAsteroids;
 	AsteroidClass*																m_asteroids;
 
@@ -170,12 +168,11 @@ private:
     std::unique_ptr<DirectX::WaveBank>                                      m_waveBank;
     std::unique_ptr<DirectX::SoundEffect>                                   m_soundEffect;
     std::unique_ptr<DirectX::SoundEffect>                                   m_soundJetpack;
-    // std::unique_ptr<DirectX::SoundEffect>                                   m_soundJetpackBoost;
-    std::unique_ptr<DirectX::SoundEffectInstance>                           m_effect1;
-    std::unique_ptr<DirectX::SoundEffectInstance>                           m_effect2;
+    // std::unique_ptr<DirectX::SoundEffectInstance>                           m_effect1;
     std::unique_ptr<DirectX::SoundEffectInstance>                           m_effectJetpack;
     std::unique_ptr<DirectX::SoundEffectInstance>                           m_effectJetpackBoost;
     std::unique_ptr<DirectX::SoundEffectInstance>                           m_effectRocket;
+    std::unique_ptr<DirectX::SoundEffectInstance>                           m_effectChillBG;
 #endif
     
 
